@@ -1,0 +1,9 @@
+[package]
+name = "atcoder-create-contest-dir"
+version = "0.1.0"
+authors = ["SSlime-s <62363188+SSlime-s@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
