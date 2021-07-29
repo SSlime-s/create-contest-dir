@@ -11,7 +11,7 @@ use std::{
 
 use crate::{
     templates::{CHILD_FILE_TEMPLATE, MAIN_FILE_TEMPLATE},
-    utils::clear_file,
+    utils::generate_options_file,
 };
 
 enum ErrorMessages {
@@ -109,50 +109,5 @@ async fn main() {
             .expect(ErrorMessages::FailedWrite.value());
     }
 
-    let cargo_toml_base = get_request::get_cargo_toml()
-        .await
-        .expect(ErrorMessages::FailedGet.value());
-    let re = Regex::new(r"\[\[bin\]\](?s:.)*").unwrap();
-    let parsed_base = &re.captures(cargo_toml_base.as_str()).unwrap()[0];
-    let mut cargo_toml = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(format!("{}/Cargo.toml", contest_name))
-        .expect(ErrorMessages::FailedCreateFile.value());
-    let content = clear_file(&mut cargo_toml).expect(ErrorMessages::FailedWrite.value());
-
-    cargo_toml
-        .write_all(
-            content
-                .trim_start()
-                .replace("[dependencies]", parsed_base)
-                .as_bytes(),
-        )
-        .expect(ErrorMessages::FailedWrite.value());
-
-    let cargo_lock_base = get_request::get_cargo_lock()
-        .await
-        .expect(ErrorMessages::FailedGet.value());
-    let mut cargo_lock = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(format!("{}/Cargo.lock", contest_name))
-        .expect(ErrorMessages::FailedCreateFile.value());
-    cargo_lock
-        .write_all(cargo_lock_base.as_bytes())
-        .expect(ErrorMessages::FailedWrite.value());
-
-    let rust_toolchain_base = get_request::get_rust_toolchain()
-        .await
-        .expect(ErrorMessages::FailedGet.value());
-    let mut rust_toolchain = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(format!("{}/rust-toolchain", contest_name))
-        .expect(ErrorMessages::FailedCreateFile.value());
-    rust_toolchain
-        .write_all(rust_toolchain_base.as_bytes())
-        .expect(ErrorMessages::FailedWrite.value());
+    generate_options_file(contest_name);
 }
