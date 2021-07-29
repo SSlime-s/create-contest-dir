@@ -38,14 +38,6 @@ fn main() {
 
 // TODO: 全部入れたほうが楽だけど、最初のビルドが重くなる
 pub const CARGO_TOML: &str = r###"
-# -*- coding:utf-8-unix -*-
-
-[package]
-name = "{{project-name}}"
-version = "0.1.0"
-authors = ["{{authors}}"]
-edition = "2018"
-
 [[bin]]
 name = "main"
 path = "src/main.rs"
