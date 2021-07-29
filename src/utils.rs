@@ -68,12 +68,12 @@ pub async fn generate_options_file(dir_name: &str) -> Result<(), ErrorMessages> 
         Err(_e) => return Err(ErrorMessages::FailedWrite),
     };
 
-    match fetch_file(dir_name.as_str(), "Cargo.lock", get_request::get_cargo_lock).await {
+    match fetch_file(dir_name, "Cargo.lock", get_request::get_cargo_lock).await {
         Ok(_) => (),
         Err(e) => return Err(e),
     }
     match fetch_file(
-        dir_name.as_str(),
+        dir_name,
         "rust-toolchain",
         get_request::get_rust_toolchain,
     )

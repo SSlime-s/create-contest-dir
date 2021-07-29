@@ -14,7 +14,7 @@ use crate::{
     utils::generate_options_file,
 };
 
-enum ErrorMessages {
+pub enum ErrorMessages {
     FailedCreateDir,
     FailedCreateFile,
     FailedWrite,
