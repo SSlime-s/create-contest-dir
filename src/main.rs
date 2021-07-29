@@ -139,14 +139,20 @@ async fn main() {
         .truncate(true)
         .open(format!("{}/Cargo.lock", contest_name))
         .expect(ErrorMessages::FailedCreateFile.value());
-    cargo_lock.write_all(cargo_lock_base.as_bytes()).expect(ErrorMessages::FailedWrite.value());
+    cargo_lock
+        .write_all(cargo_lock_base.as_bytes())
+        .expect(ErrorMessages::FailedWrite.value());
 
-    let rust_toolchain_base = get_request::get_rust_toolchain().await.expect(ErrorMessages::FailedGet.value());
+    let rust_toolchain_base = get_request::get_rust_toolchain()
+        .await
+        .expect(ErrorMessages::FailedGet.value());
     let mut rust_toolchain = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
         .open(format!("{}/rust-toolchain", contest_name))
         .expect(ErrorMessages::FailedCreateFile.value());
-    rust_toolchain.write_all(rust_toolchain_base.as_bytes()).expect(ErrorMessages::FailedWrite.value());
+    rust_toolchain
+        .write_all(rust_toolchain_base.as_bytes())
+        .expect(ErrorMessages::FailedWrite.value());
 }
