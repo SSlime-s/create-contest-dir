@@ -1,17 +1,24 @@
+mod get_request;
 mod templates;
+mod utils;
 
+use regex::Regex;
 use std::{
     fs::{self, OpenOptions},
-    io::{Read, Seek, SeekFrom, Write},
+    io::Write,
     process::Command,
 };
 
-use crate::templates::{CARGO_TOML, CHILD_FILE_TEMPLATE, MAIN_FILE_TEMPLATE};
+use crate::{
+    templates::{CHILD_FILE_TEMPLATE, MAIN_FILE_TEMPLATE},
+    utils::clear_file,
+};
 
 enum ErrorMessages {
     FailedCreateDir,
     FailedCreateFile,
     FailedWrite,
+    FailedGet,
 }
 impl ErrorMessages {
     fn value(&self) -> &'static str {
@@ -19,15 +26,18 @@ impl ErrorMessages {
             ErrorMessages::FailedCreateDir => "failed to create dir",
             ErrorMessages::FailedCreateFile => "failed to create file",
             ErrorMessages::FailedWrite => "failed to write",
+            ErrorMessages::FailedGet => "failed to get file",
         }
     }
 }
 
+#[allow(dead_code)]
 enum Contests {
     ABC,
     ARC,
     AGC,
 }
+#[allow(dead_code)]
 impl Contests {
     fn value(&self) -> &'static str {
         match *self {
@@ -48,15 +58,17 @@ impl Contests {
     }
 }
 
-fn main() {
-    Command::new("cargo")
-        .args(&["new", "--bin", "abc-210"])
-        .output()
-        .expect(ErrorMessages::FailedCreateDir.value());
-    let mut main_file =
-        fs::File::create("abc-210/src/main.rs").expect(ErrorMessages::FailedCreateFile.value());
+#[tokio::main]
+async fn main() {
     let contest_name = "abc-210";
     let contest_type = Contests::ABC;
+
+    Command::new("cargo")
+        .args(&["new", "--bin", contest_name])
+        .output()
+        .expect(ErrorMessages::FailedCreateDir.value());
+    let mut main_file = fs::File::create(format!("{}/src/main.rs", contest_name))
+        .expect(ErrorMessages::FailedCreateFile.value());
     main_file
         .write_all(
             MAIN_FILE_TEMPLATE
@@ -90,33 +102,30 @@ fn main() {
         .expect(ErrorMessages::FailedWrite.value());
 
     for x in contest_type.problem_names() {
-        let mut child_file =
-            fs::File::create(format!("{}/src/{}.rs", contest_name ,x)).expect("failed to create file");
+        let mut child_file = fs::File::create(format!("{}/src/{}.rs", contest_name, x))
+            .expect("failed to create file");
         child_file
             .write_all(CHILD_FILE_TEMPLATE.trim_start().as_bytes())
             .expect(ErrorMessages::FailedWrite.value());
     }
 
+    let cargo_toml_base = get_request::get_cargo_toml()
+        .await
+        .expect(ErrorMessages::FailedGet.value());
+    let re = Regex::new(r"\[\[bin\]\](?s:.)*").unwrap();
+    let parsed_base = &re.captures(cargo_toml_base.as_str()).unwrap()[0];
     let mut cargo_toml = OpenOptions::new()
         .read(true)
         .write(true)
         .open(format!("{}/Cargo.toml", contest_name))
         .expect(ErrorMessages::FailedCreateFile.value());
-    let mut contents = String::new();
-    cargo_toml
-        .read_to_string(&mut contents)
-        .expect(ErrorMessages::FailedWrite.value());
-    cargo_toml
-        .set_len(0)
-        .expect(ErrorMessages::FailedWrite.value());
-    cargo_toml
-        .seek(SeekFrom::Start(0))
-        .expect(ErrorMessages::FailedWrite.value());
+    let content = clear_file(&mut cargo_toml).expect(ErrorMessages::FailedWrite.value());
+
     cargo_toml
         .write_all(
-            contents
+            content
                 .trim_start()
-                .replace("[dependencies]", CARGO_TOML)
+                .replace("[dependencies]", parsed_base)
                 .as_bytes(),
         )
         .expect(ErrorMessages::FailedWrite.value());
