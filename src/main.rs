@@ -2,9 +2,9 @@ mod get_request;
 mod templates;
 mod utils;
 
-use regex::Regex;
 use std::{
-    fs::{self, OpenOptions},
+    fmt,
+    fs::{self},
     io::Write,
     process::Command,
 };
@@ -28,6 +28,11 @@ impl ErrorMessages {
             ErrorMessages::FailedWrite => "failed to write",
             ErrorMessages::FailedGet => "failed to get file",
         }
+    }
+}
+impl fmt::Debug for ErrorMessages {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -109,5 +114,7 @@ async fn main() {
             .expect(ErrorMessages::FailedWrite.value());
     }
 
-    generate_options_file(contest_name);
+    generate_options_file(contest_name)
+        .await
+        .expect("Error on `generate_options_file`: ");
 }

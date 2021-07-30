@@ -72,13 +72,7 @@ pub async fn generate_options_file(dir_name: &str) -> Result<(), ErrorMessages> 
         Ok(_) => (),
         Err(e) => return Err(e),
     }
-    match fetch_file(
-        dir_name,
-        "rust-toolchain",
-        get_request::get_rust_toolchain,
-    )
-    .await
-    {
+    match fetch_file(dir_name, "rust-toolchain", get_request::get_rust_toolchain).await {
         Ok(_) => (),
         Err(e) => return Err(e),
     }
