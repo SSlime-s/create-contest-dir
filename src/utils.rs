@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::{
     fs::{File, OpenOptions},
     future::Future,
@@ -78,4 +79,3 @@ pub async fn generate_options_file(dir_name: &str) -> Result<(), ErrorMessages> 
     }
     Ok(())
 }
-

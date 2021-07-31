@@ -1,0 +1,171 @@
+use clap::{self, App, Arg, SubCommand, crate_authors, crate_description, crate_name, crate_version};
+use once_cell::sync::Lazy;
+use regex::Regex;
+
+use crate::{ContestInfo, Contests};
+
+struct OptionalContestInfo {
+    name: Option<String>,
+    kind: Option<Contests>,
+    url: Option<String>,
+}
+impl From<OptionalContestInfo> for Result<ContestInfo, ()> {
+    fn from(info: OptionalContestInfo) -> Result<ContestInfo, ()> {
+        if let (Some(name), Some(kind)) = (info.name, info.kind) {
+            Ok(ContestInfo {
+                name,
+                kind,
+                url: info.url,
+            })
+        } else {
+            Err(())
+        }
+    }
+}
+
+
+pub fn parse_default_arg() -> Result<ContestInfo, String> {
+    let app = create_app();
+    let matches = app.get_matches();
+    let mut contest_info = OptionalContestInfo {
+        name: None,
+        kind: None,
+        url: None,
+    };
+
+    if let Some(v_url) = matches.value_of("url") {
+        let extracted_name = extract_name_from_url(v_url);
+        match extracted_name {
+            Ok(v_name) => {
+                contest_info.url = Some(v_url.to_string());
+                let formatted_name = format_contest_name(&v_name);
+                match formatted_name {
+                    ContestKind::AXC(kind, num) => {
+                        contest_info.name = Some(format!("{}-{}", kind, num));
+                        contest_info.kind = Some((kind.as_str(), num.as_str()).into());
+                    }
+                    ContestKind::Other(name) => contest_info.name = Some(name),
+                }
+            }
+            Err(_e) => return Err("Invalid URL !".to_string()),
+        }
+    };
+
+    if let Some(v_name) = matches.value_of("name") {
+        let formatted_name = format_contest_name(&v_name);
+        match formatted_name {
+            ContestKind::AXC(kind, num) => {
+                contest_info.name = Some(format!("{}-{}", kind, num));
+                contest_info.kind = Some((kind.as_str(), num.as_str()).into());
+            }
+            ContestKind::Other(name) => contest_info.name = Some(name),
+        }
+    }
+
+    if let Some(v_type) = matches.value_of("type") {
+        contest_info.kind = Some(match v_type.to_lowercase().as_str() {
+            "abc" => Contests::ABC,
+            "h-abc" => Contests::H_ABC,
+            "s-abc" => Contests::S_ABC,
+            "arc" => Contests::ARC,
+            "agc" => Contests::AGC,
+            _ => return Err("invalid kind !".to_string()),
+        });
+    }
+
+    let r: Result<ContestInfo, ()> = contest_info.into();
+    match r {
+        Ok(c) => Ok(c),
+        Err(_) => Err("name and kind is required !".to_string()),
+    }
+}
+
+fn create_app<'a>() -> App<'a, 'a> {
+    let app = App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
+        .arg(
+            Arg::with_name("url")
+                .help("contest url")
+                .short("u")
+                .long("url")
+                .value_name("URL")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("name")
+                .help("contest_name")
+                .short("n")
+                .long("name")
+                .value_name("NAME")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("type")
+                .help("contest type")
+                .short("t")
+                .long("type")
+                .value_name("TYPE")
+                .takes_value(true),
+        )
+        .subcommand(
+            SubCommand::with_name("login")
+                .about("login to AtCoder (for contest on going)")
+                .arg(
+                    Arg::with_name("user_name")
+                        .help("user name")
+                        .short("u")
+                        .long("user")
+                        .value_name("USER_NAME")
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("add test")
+                .about("add test on existing dir")
+                .arg(
+                    Arg::with_name("url")
+                        .help("contest url")
+                        .short("u")
+                        .long("url")
+                        .value_name("URL")
+                        .takes_value(true)
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("name")
+                        .help("dir name (contest name)")
+                        .short("n")
+                        .long("name")
+                        .value_name("NAME")
+                        .takes_value(true)
+                        .required(true),
+                ),
+        );
+    app
+}
+
+static URL_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"https?://atcoder.jp/contests/([^/]+).*").unwrap());
+
+fn extract_name_from_url(url: &str) -> Result<String, ()> {
+    let m = URL_REGEX.captures(url);
+    match m {
+        Some(c) => Ok(c[1].to_string()),
+        None => Err(()),
+    }
+}
+
+static AXC_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)(a[bgr]c)[-_]?([0-9]{3})").unwrap());
+enum ContestKind {
+    AXC(String, String),
+    Other(String),
+}
+fn format_contest_name(name: &str) -> ContestKind {
+    let m = AXC_REGEX.captures(name);
+    match m {
+        Some(c) => ContestKind::AXC((&c[1]).to_lowercase().to_string(), (&c[2]).to_string()),
+        None => ContestKind::Other(name.to_lowercase()),
+    }
+}

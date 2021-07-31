@@ -3,6 +3,11 @@ name = "atcoder-create-contest-dir"
 version = "0.1.0"
 authors = ["SSlime-s <62363188+SSlime-s@users.noreply.github.com>"]
 edition = "2018"
+description = "create cargo directory for AtCoder contests"
+
+[[bin]]
+name = "create-contest"
+path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,3 +16,7 @@ reqwest = { version = "0.10" }
 tokio = { version = "0.2", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 regex = "1"
+clap = "2.33.3"
+once_cell = "1.8"
+rpassword = "5.0"
+cachedir = "0.3"
