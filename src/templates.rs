@@ -1,3 +1,10 @@
+pub const CARGO_FILE_ADD_TEMPLATE: &str = r###"
+# ---------------------------------------------------------------------
+
+[dev-dependencies]
+cli_test_dir = "0.1"
+"###;
+
 pub const CHILD_FILE_TEMPLATE: &str = r###"
 use proconio::input;
 

@@ -3,9 +3,10 @@ use std::{
     fs::{File, OpenOptions},
     future::Future,
     io::{Error, Read, Seek, SeekFrom, Write},
+    ops::Add,
 };
 
-use crate::{get_request, ErrorMessages};
+use crate::{get_request, templates::CARGO_FILE_ADD_TEMPLATE, ErrorMessages};
 
 pub fn clear_file(file: &mut File) -> Result<String, Error> {
     let mut content = String::new();
@@ -63,6 +64,7 @@ pub async fn generate_options_file(dir_name: &str) -> Result<(), ErrorMessages> 
         content
             .trim_start()
             .replace("[dependencies]", parsed_base)
+            .add(CARGO_FILE_ADD_TEMPLATE)
             .as_bytes(),
     ) {
         Ok(_) => (),
