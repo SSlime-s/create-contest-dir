@@ -1,4 +1,9 @@
-use clap::{self, App, Arg, SubCommand, crate_authors, crate_description, crate_name, crate_version};
+use std::io::{stdin, stdout, Write};
+
+use clap::{
+    self, crate_authors, crate_description, crate_name, crate_version, App, Arg, ArgMatches,
+    SubCommand,
+};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -23,10 +28,44 @@ impl From<OptionalContestInfo> for Result<ContestInfo, ()> {
     }
 }
 
-
-pub fn parse_default_arg() -> Result<ContestInfo, String> {
+pub enum ParsedArg {
+    CreateDir(ContestInfo),
+    Login(String, String),
+}
+pub fn parse_arg() -> Result<ParsedArg, String> {
     let app = create_app();
     let matches = app.get_matches();
+    if let Some(matches) = matches.subcommand_matches("login") {
+        match parse_login_arg(matches) {
+            Ok(res) => Ok(ParsedArg::Login(res.0, res.1)),
+            Err(e) => Err(e),
+        }
+    } else {
+        match parse_default_arg(&matches) {
+            Ok(res) => Ok(ParsedArg::CreateDir(res)),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+pub fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String> {
+    let user_name = if let Some(u) = matches.value_of("user_name") {
+        u.to_string()
+    } else {
+        print!("user name: ");
+        stdout().flush().unwrap();
+        let mut name = String::new();
+        stdin().read_line(&mut name).unwrap();
+        name.trim().to_string()
+    };
+    let password = match rpassword::read_password_from_tty(Some("password: ")) {
+        Ok(s) => s,
+        Err(e) => return Err(e.to_string()),
+    };
+    Ok((user_name, password))
+}
+
+pub fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
     let mut contest_info = OptionalContestInfo {
         name: None,
         kind: None,
@@ -149,7 +188,7 @@ fn create_app<'a>() -> App<'a, 'a> {
 static URL_REGEX: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"https?://atcoder.jp/contests/([^/]+).*").unwrap());
 
-fn extract_name_from_url(url: &str) -> Result<String, ()> {
+pub fn extract_name_from_url(url: &str) -> Result<String, ()> {
     let m = URL_REGEX.captures(url);
     match m {
         Some(c) => Ok(c[1].to_string()),

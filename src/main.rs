@@ -1,19 +1,14 @@
 mod get_request;
+mod handler;
 mod parser;
 mod templates;
 mod utils;
 
-use std::{
-    fmt,
-    fs::{self},
-    io::Write,
-    process::Command,
-};
+use std::fmt;
 
 use crate::{
-    parser::parse_default_arg,
-    templates::{CHILD_FILE_TEMPLATE, MAIN_FILE_TEMPLATE},
-    utils::generate_options_file,
+    handler::{create_contest_dir, login},
+    parser::{parse_arg, ParsedArg},
 };
 
 pub enum ErrorMessages {
@@ -100,60 +95,13 @@ impl From<(&str, &str)> for Contests {
 
 #[tokio::main]
 async fn main() {
-    let contest_info = match parse_default_arg() {
-        Ok(c) => c,
+    let parsed_arg = match parse_arg() {
+        Ok(res) => res,
         Err(e) => panic!("{}", e),
     };
 
-    Command::new("cargo")
-        .args(&["new", "--bin", &contest_info.name])
-        .output()
-        .expect(ErrorMessages::FailedCreateDir.value());
-    let mut main_file = fs::File::create(format!("{}/src/main.rs", contest_info.name))
-        .expect(ErrorMessages::FailedCreateFile.value());
-    main_file
-        .write_all(
-            MAIN_FILE_TEMPLATE
-                .replace(
-                    "{{mods}}",
-                    contest_info
-                        .kind
-                        .problem_names()
-                        .into_iter()
-                        .map(|x| format!("mod {};", x))
-                        .collect::<Vec<String>>()
-                        .join("\n")
-                        .as_str(),
-                )
-                .replace(
-                    "{{programs}}",
-                    contest_info.kind.problem_names().join("").as_str(),
-                )
-                .replace(
-                    "{{mains}}",
-                    contest_info
-                        .kind
-                        .problem_names()
-                        .into_iter()
-                        .map(|x| format!("        \"{}\" => crate::{}::main(),", x, x))
-                        .collect::<Vec<String>>()
-                        .join("\n")
-                        .as_str(),
-                )
-                .trim_start()
-                .as_bytes(),
-        )
-        .expect(ErrorMessages::FailedWrite.value());
-
-    for x in contest_info.kind.problem_names() {
-        let mut child_file = fs::File::create(format!("{}/src/{}.rs", contest_info.name, x))
-            .expect("failed to create file");
-        child_file
-            .write_all(CHILD_FILE_TEMPLATE.trim_start().as_bytes())
-            .expect(ErrorMessages::FailedWrite.value());
+    match parsed_arg {
+        ParsedArg::CreateDir(contest_info) => create_contest_dir(contest_info).await,
+        ParsedArg::Login(user_name, password) => login(user_name, password).await,
     }
-
-    generate_options_file(&contest_info.name)
-        .await
-        .expect("Error on `generate_options_file`: ");
 }
