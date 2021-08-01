@@ -48,6 +48,7 @@ enum Contests {
     ARC,
     AGC,
 }
+#[allow(dead_code)]
 impl Contests {
     fn value(&self) -> &'static str {
         match *self {
