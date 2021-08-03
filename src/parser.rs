@@ -196,6 +196,6 @@ fn format_contest_name(name: &str) -> ContestKind {
     let m = AXC_REGEX.captures(name);
     match m {
         Some(c) => ContestKind::AXC((&c[1]).to_lowercase().to_string(), (&c[2]).to_string()),
-        None => ContestKind::Other(name.to_lowercase()),
+        None => ContestKind::Other(name.to_lowercase().replace("_", "-")),
     }
 }
