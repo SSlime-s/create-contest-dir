@@ -161,7 +161,7 @@ fn create_app<'a>() -> App<'a, 'a> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("add test")
+            SubCommand::with_name("add_test")
                 .about("add test on existing dir")
                 .arg(
                     Arg::with_name("url")
@@ -169,15 +169,6 @@ fn create_app<'a>() -> App<'a, 'a> {
                         .short("u")
                         .long("url")
                         .value_name("URL")
-                        .takes_value(true)
-                        .required(true),
-                )
-                .arg(
-                    Arg::with_name("name")
-                        .help("dir name (contest name)")
-                        .short("n")
-                        .long("name")
-                        .value_name("NAME")
                         .takes_value(true)
                         .required(true),
                 ),
