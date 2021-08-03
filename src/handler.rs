@@ -71,7 +71,9 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
     generate_options_file(&contest_info.name)
         .await
         .expect("Error on `generate_options_file`: ");
-    create_sample_test_files(contest_info).await;
+    if let Some(_) = contest_info.url {
+        create_sample_test_files(contest_info).await;
+    }
 }
 
 pub async fn login(user_name: String, password: String) {
