@@ -21,7 +21,7 @@ use crate::{
 
 pub async fn create_contest_dir(contest_info: ContestInfo) {
     Command::new("cargo")
-        .args(&["new", "--bin", &contest_info.name, "--vcs"])
+        .args(&["new", "--bin", &contest_info.name, "--vcs", "none"])
         .output()
         .expect(ErrorMessages::FailedCreateDir.value());
     let mut main_file = fs::File::create(format!("{}/src/main.rs", contest_info.name))
