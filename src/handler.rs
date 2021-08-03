@@ -6,7 +6,6 @@ use reqwest::{
 use std::{
     fs,
     io::{BufRead, Write},
-    ops::Add,
     process::Command,
 };
 
@@ -170,6 +169,7 @@ async fn create_sample_test_files(contest_info: ContestInfo) {
     let name =
         extract_name_from_url(&contest_info.url.clone().unwrap()).expect("failed to parse url");
     let url = contest_info.url.unwrap();
+    let mut test_file_content = vec![TEST_FILE_TEMPLATE.to_string()];
     for idx in contest_info.kind.problem_names() {
         fs::create_dir(format!("{}/tests/{}", contest_info.name, idx))
             .expect(ErrorMessages::FailedCreateDir.value());
@@ -181,30 +181,25 @@ async fn create_sample_test_files(contest_info: ContestInfo) {
         )
         .await
         .expect("failed to create sample files");
-        let mut test_file = fs::OpenOptions::new()
-            .create(true)
-            .write(true)
-            .truncate(true)
-            .open(format!("{}/tests/test_{}.rs", contest_info.name, idx))
-            .expect(ErrorMessages::FailedCreateFile.value());
-        test_file
-            .write_all(
-                TEST_FILE_TEMPLATE
-                    .to_string()
-                    .add(
-                        (0..sample_cnt)
-                            .map(|i| {
-                                TEST_FILE_CHILD_TEMPLATE
-                                    .replace("{{name}}", &idx)
-                                    .replace("{{num}}", &(i + 1).to_string())
-                            })
-                            .join("\n")
-                            .as_str(),
-                    )
-                    .as_bytes(),
-            )
-            .expect(ErrorMessages::FailedWrite.value());
+        test_file_content.push(
+            (0..sample_cnt)
+                .map(|i| {
+                    TEST_FILE_CHILD_TEMPLATE
+                        .replace("{{name}}", &idx)
+                        .replace("{{num}}", &(i + 1).to_string())
+                })
+                .join(""),
+        );
     }
+    let mut test_file = fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(format!("{}/tests/main.rs", contest_info.name))
+        .expect(ErrorMessages::FailedCreateFile.value());
+    test_file
+        .write_all(test_file_content.join("\n").as_bytes())
+        .expect(ErrorMessages::FailedWrite.value());
 }
 
 async fn generate_sample_test_file(
