@@ -16,7 +16,7 @@ args:
   --url もしくは --name, --type は必須 ただしスポンサードコンテストでは --type も必須 (zoon-2020 等 URL に abc.. などが含まれないもの)
 ```
 ### login
-進行中のコンテストのサンプルケース取得に必要 (cookie は保存しますが、password は保存しません)
+進行中のコンテストのサンプルケース取得に必要です(cookie は保存しますが、password は保存しません)
 ```
 usage:
   create-contest login [{-u|--user} <USER_NAME>]
