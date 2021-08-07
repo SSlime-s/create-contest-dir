@@ -15,7 +15,7 @@ use crate::{
         CHILD_FILE_TEMPLATE, MAIN_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE,
     },
     utils::generate_options_file,
-    ContestInfo, ErrorMessages,
+    ContestInfo, Contests, ErrorMessages,
 };
 
 pub async fn create_contest_dir(contest_info: ContestInfo) {
@@ -71,7 +71,9 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
         .await
         .expect("Error on `generate_options_file`: ");
     if let Some(_) = contest_info.url {
-        create_sample_test_files(contest_info).await;
+        generate_tests_dir(contest_info)
+            .await
+            .expect("Failed to Generate Tests Dir: ");
     }
 }
 
@@ -139,48 +141,52 @@ pub async fn login(user_name: String, password: String) {
     println!("Saved Your cookie in \"{}\"", cookie_path.to_str().unwrap());
 }
 
-async fn create_sample_test_files(contest_info: ContestInfo) {
-    fs::create_dir(format!("{}/tests", contest_info.name))
-        .expect(ErrorMessages::FailedCreateDir.value());
-    let cookie_headers = || -> Option<HeaderMap> {
-        let file = std::fs::File::open(
-            dirs::home_dir()
-                .unwrap()
-                .join(".atcoder-sample-downloader")
-                .join("cookie"),
-        );
-        let file = match file {
-            Ok(f) => f,
-            Err(_e) => return None,
-        };
-        let reader = std::io::BufReader::new(file);
-        let mut cookie_headers = HeaderMap::new();
-        reader.lines().for_each(|line| {
-            cookie_headers.insert(
-                COOKIE,
-                HeaderValue::from_str(&format!("{}", line.unwrap())).unwrap(),
-            );
-        });
-        Some(cookie_headers)
-    }()
-    .unwrap_or(HeaderMap::new());
+async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
+    let res = fs::create_dir(format!("{}/tests", contest_info.name));
+    match res {
+        Ok(_) => (),
+        Err(_e) => return Err(ErrorMessages::FailedCreateDir.value().to_string()),
+    }
+    generate_tests_files(
+        format!("{}/tests", contest_info.name),
+        contest_info.url.unwrap(),
+        contest_info.kind,
+    )
+    .await?;
+    Ok(())
+}
+
+async fn generate_tests_files(
+    path: impl Into<String>,
+    url: impl Into<String>,
+    kind: Contests,
+) -> Result<(), String> {
+    let cookie_headers = get_local_cookie_header().unwrap_or(HeaderMap::new());
+    let path: String = path.into();
+    let url: String = url.into();
 
     let client = create_cli();
-    let name =
-        extract_name_from_url(&contest_info.url.clone().unwrap()).expect("failed to parse url");
-    let url = contest_info.url.unwrap();
+    let name = match extract_name_from_url(&url) {
+        Ok(s) => s,
+        Err(_e) => return Err("Failed to Parse Url".to_string()),
+    };
     let mut test_file_content = vec![TEST_FILE_TEMPLATE.to_string()];
-    for idx in contest_info.kind.problem_names() {
-        fs::create_dir(format!("{}/tests/{}", contest_info.name, idx))
-            .expect(ErrorMessages::FailedCreateDir.value());
-        let sample_cnt = generate_sample_test_file(
-            format!("{}/tasks/{}_{}", url, name, idx).as_str(),
-            &format!("{}/tests/{}/{}", contest_info.name, idx, idx),
+    for idx in kind.problem_names() {
+        match fs::create_dir(format!("{}/{}", &path, idx)) {
+            Ok(_) => (),
+            Err(_e) => return Err(ErrorMessages::FailedCreateDir.value().to_string()),
+        }
+        let res = generate_sample_test_file(
+            format!("{}/tasks/{}_{}", &url, name, idx).as_str(),
+            &format!("{}/{}/{}", &path, idx, idx),
             &cookie_headers,
             &client,
         )
-        .await
-        .expect("failed to create sample files");
+        .await;
+        let sample_cnt = match res {
+            Ok(u) => u,
+            Err(_e) => return Err("Failed to Create Sample Files".to_string()),
+        };
         test_file_content.push(
             (0..sample_cnt)
                 .map(|i| {
@@ -191,15 +197,21 @@ async fn create_sample_test_files(contest_info: ContestInfo) {
                 .join(""),
         );
     }
-    let mut test_file = fs::OpenOptions::new()
+    let mut test_file = match fs::OpenOptions::new()
         .create(true)
         .write(true)
         .truncate(true)
-        .open(format!("{}/tests/main.rs", contest_info.name))
-        .expect(ErrorMessages::FailedCreateFile.value());
-    test_file
-        .write_all(test_file_content.join("\n").as_bytes())
-        .expect(ErrorMessages::FailedWrite.value());
+        .open(format!("{}/main.rs", &path))
+    {
+        Ok(f) => f,
+        Err(_e) => return Err(ErrorMessages::FailedCreateFile.value().to_string()),
+    };
+    match test_file.write_all(test_file_content.join("\n").as_bytes()) {
+        Ok(_) => (),
+        Err(_e) => return Err(ErrorMessages::FailedWrite.value().to_string()),
+    };
+
+    Ok(())
 }
 
 async fn generate_sample_test_file(
@@ -294,4 +306,26 @@ fn create_cli() -> reqwest::Client {
         .cookie_store(true)
         .build()
         .unwrap()
+}
+
+fn get_local_cookie_header() -> Option<HeaderMap> {
+    let file = std::fs::File::open(
+        dirs::home_dir()
+            .unwrap()
+            .join(".atcoder-sample-downloader")
+            .join("cookie"),
+    );
+    let file = match file {
+        Ok(f) => f,
+        Err(_e) => return None,
+    };
+    let reader = std::io::BufReader::new(file);
+    let mut cookie_headers = HeaderMap::new();
+    reader.lines().for_each(|line| {
+        cookie_headers.insert(
+            COOKIE,
+            HeaderValue::from_str(&format!("{}", line.unwrap())).unwrap(),
+        );
+    });
+    Some(cookie_headers)
 }
