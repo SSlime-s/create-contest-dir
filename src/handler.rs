@@ -315,7 +315,7 @@ fn get_local_cookie_header() -> Option<HeaderMap> {
     let file = std::fs::File::open(
         dirs::home_dir()
             .unwrap()
-            .join(".atcoder-sample-downloader")
+            .join(".atcoder-create-contest-dir")
             .join("cookie"),
     );
     let file = match file {
