@@ -19,6 +19,9 @@ use crate::{
 };
 
 pub async fn create_contest_dir(contest_info: ContestInfo) {
+    if std::path::Path::new(&format!("./{}", &contest_info.name)).is_dir() {
+        panic!("dir {} is already exists !", &contest_info.name)
+    }
     Command::new("cargo")
         .args(&["new", "--bin", &contest_info.name, "--vcs", "none"])
         .output()
