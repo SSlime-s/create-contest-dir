@@ -177,7 +177,7 @@ fn create_app<'a>() -> App<'a, 'a> {
 }
 
 static URL_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"https?://atcoder.jp/contests/([^/]+).*").unwrap());
+    Lazy::new(|| Regex::new(r"^https?://atcoder.jp/contests/([^/]+).*$").unwrap());
 
 pub fn extract_name_from_url(url: &str) -> Result<String, ()> {
     let m = URL_REGEX.captures(url);
