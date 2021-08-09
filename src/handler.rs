@@ -6,6 +6,7 @@ use reqwest::{
 use std::{
     fs,
     io::{BufRead, Write},
+    ops::Add,
     process::Command,
 };
 
@@ -181,7 +182,6 @@ async fn generate_tests_files(
         Ok(s) => s,
         Err(_e) => return Err("Failed to Parse Url".to_string()),
     };
-    let mut test_file_content = vec![TEST_FILE_TEMPLATE.to_string()];
     for idx in kind.problem_names() {
         match fs::create_dir(format!("{}/{}", &path, idx)) {
             Ok(_) => (),
@@ -198,29 +198,32 @@ async fn generate_tests_files(
             Ok(u) => u,
             Err(_e) => return Err("Failed to Create Sample Files".to_string()),
         };
-        test_file_content.push(
-            (0..sample_cnt)
-                .map(|i| {
-                    TEST_FILE_CHILD_TEMPLATE
-                        .replace("{{name}}", &idx)
-                        .replace("{{num}}", &(i + 1).to_string())
-                })
-                .join(""),
+        let mut test_file = match fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(format!("{}/{}.rs", &path, idx))
+        {
+            Ok(f) => f,
+            Err(_e) => return Err(ErrorMessages::FailedCreateFile.value().to_string()),
+        };
+        let res = test_file.write_all(
+            TEST_FILE_TEMPLATE
+                .to_string()
+                .add(
+                    (0..sample_cnt)
+                        .map(|i| TEST_FILE_CHILD_TEMPLATE.replace("{{num}}", &(i + 1).to_string()))
+                        .join("\n")
+                        .as_str(),
+                )
+                .replace("{{name}}", &idx)
+                .as_bytes(),
         );
+        match res {
+            Ok(_) => (),
+            Err(_e) => return Err(ErrorMessages::FailedWrite.value().to_string()),
+        }
     }
-    let mut test_file = match fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(format!("{}/main.rs", &path))
-    {
-        Ok(f) => f,
-        Err(_e) => return Err(ErrorMessages::FailedCreateFile.value().to_string()),
-    };
-    match test_file.write_all(test_file_content.join("\n").as_bytes()) {
-        Ok(_) => (),
-        Err(_e) => return Err(ErrorMessages::FailedWrite.value().to_string()),
-    };
 
     Ok(())
 }

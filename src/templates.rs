@@ -48,7 +48,7 @@ use std::io::BufRead;
 
 use cli_test_dir::*;
 
-const BIN: &'static str = "./main";
+const BIN: &'static str = "./{{name}}";
 
 fn test_base(name: &str, num: u32) {
     let testdir = TestDir::new(BIN, "");
