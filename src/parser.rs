@@ -187,7 +187,8 @@ pub fn extract_name_from_url(url: &str) -> Result<String, ()> {
     }
 }
 
-static AXC_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)^(a[bgr]c)[-_]?([0-9]{3})$").unwrap());
+static AXC_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?i)^(a[bgr]c)[-_]?([0-9]{3})$").unwrap());
 enum ContestKind {
     AXC(String, String),
     Other(String),
