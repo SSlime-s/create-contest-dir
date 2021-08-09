@@ -14,6 +14,7 @@ use crate::{
 pub enum ErrorMessages {
     FailedCreateDir,
     FailedCreateFile,
+    FailedRemoveFile,
     FailedWrite,
     FailedGet,
 }
@@ -22,6 +23,7 @@ impl ErrorMessages {
         match *self {
             ErrorMessages::FailedCreateDir => "failed to create dir",
             ErrorMessages::FailedCreateFile => "failed to create file",
+            ErrorMessages::FailedRemoveFile => "failed to remove file",
             ErrorMessages::FailedWrite => "failed to write",
             ErrorMessages::FailedGet => "failed to get file",
         }

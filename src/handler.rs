@@ -12,9 +12,7 @@ use std::{
 
 use crate::{
     parser::extract_name_from_url,
-    templates::{
-        CHILD_FILE_TEMPLATE, MAIN_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE,
-    },
+    templates::{CHILD_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE},
     utils::generate_options_file,
     ContestInfo, Contests, ErrorMessages,
 };
@@ -27,41 +25,8 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
         .args(&["new", "--bin", &contest_info.name, "--vcs", "none"])
         .output()
         .expect(ErrorMessages::FailedCreateDir.value());
-    let mut main_file = fs::File::create(format!("{}/src/main.rs", contest_info.name))
-        .expect(ErrorMessages::FailedCreateFile.value());
-    main_file
-        .write_all(
-            MAIN_FILE_TEMPLATE
-                .replace(
-                    "{{mods}}",
-                    contest_info
-                        .kind
-                        .problem_names()
-                        .into_iter()
-                        .map(|x| format!("mod {};", x))
-                        .collect::<Vec<String>>()
-                        .join("\n")
-                        .as_str(),
-                )
-                .replace(
-                    "{{programs}}",
-                    contest_info.kind.problem_names().join("").as_str(),
-                )
-                .replace(
-                    "{{mains}}",
-                    contest_info
-                        .kind
-                        .problem_names()
-                        .into_iter()
-                        .map(|x| format!("        \"{}\" => crate::{}::main(),", x, x))
-                        .collect::<Vec<String>>()
-                        .join("\n")
-                        .as_str(),
-                )
-                .trim_start()
-                .as_bytes(),
-        )
-        .expect(ErrorMessages::FailedWrite.value());
+    fs::remove_file(format!("{}/src/main.rs", &contest_info.name))
+        .expect(ErrorMessages::FailedRemoveFile.value());
 
     for x in contest_info.kind.problem_names() {
         let mut child_file = fs::File::create(format!("{}/src/{}.rs", contest_info.name, x))
