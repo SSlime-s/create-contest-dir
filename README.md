@@ -2,6 +2,9 @@
 AtCoder のコンテストに Rust で参加する際のディレクトリを簡単に作成することができます
 `cargo test` でサンプルケースのテストもできます
 提出の際は `src/x.rs` を提出してください
+## install
+`cargo install --git https://github.com/SSlime-s/create-contest-dir --branch main`
+
 ## usage
 ### directory 作成
 ```
