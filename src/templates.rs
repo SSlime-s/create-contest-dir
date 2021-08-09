@@ -5,6 +5,12 @@ pub const CARGO_FILE_ADD_TEMPLATE: &str = r###"
 cli_test_dir = "0.1"
 "###;
 
+pub const CARGO_TOML_BIN_TEMPLATE: &str = r###"
+[[bin]]
+name = "{{name}}"
+path = "src/{{name}}.rs"
+"###;
+
 pub const CHILD_FILE_TEMPLATE: &str = r###"
 use proconio::input;
 

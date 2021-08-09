@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use regex::Regex;
 use std::{
     fs::{File, OpenOptions},
@@ -6,7 +7,11 @@ use std::{
     ops::Add,
 };
 
-use crate::{get_request, templates::CARGO_FILE_ADD_TEMPLATE, ErrorMessages};
+use crate::{
+    get_request,
+    templates::{CARGO_FILE_ADD_TEMPLATE, CARGO_TOML_BIN_TEMPLATE},
+    ErrorMessages,
+};
 
 pub fn clear_file(file: &mut File) -> Result<String, Error> {
     let mut content = String::new();
@@ -40,13 +45,17 @@ where
     };
 }
 
-pub async fn generate_options_file(dir_name: &str) -> Result<(), ErrorMessages> {
+pub async fn generate_options_file(
+    dir_name: &str,
+    names: Vec<String>,
+) -> Result<(), ErrorMessages> {
     let cargo_toml_base = match get_request::get_cargo_toml().await {
         Ok(s) => s,
         Err(_e) => return Err(ErrorMessages::FailedGet),
     };
-    let re = Regex::new(r"\[\[bin\]\](?s:.)*").unwrap();
+    let re = Regex::new(r"\[dependencies\](?s:.)*").unwrap();
     let parsed_base = &re.captures(cargo_toml_base.as_str()).unwrap()[0];
+
     let mut cargo_toml = match OpenOptions::new()
         .read(true)
         .write(true)
@@ -63,7 +72,21 @@ pub async fn generate_options_file(dir_name: &str) -> Result<(), ErrorMessages> 
     match cargo_toml.write_all(
         content
             .trim_start()
-            .replace("[dependencies]", parsed_base)
+            .trim_end()
+            .replace("[dependencies]", "")
+            .add(
+                names
+                    .into_iter()
+                    .map(|x| {
+                        CARGO_TOML_BIN_TEMPLATE
+                            .trim()
+                            .replace("{{name}}", x.as_str())
+                    })
+                    .join("\n")
+                    .as_str(),
+            )
+            .add("\n\n")
+            .add(parsed_base)
             .add(CARGO_FILE_ADD_TEMPLATE)
             .as_bytes(),
     ) {
