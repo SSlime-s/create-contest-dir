@@ -76,7 +76,7 @@ pub fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
         let extracted_name = extract_name_from_url(v_url);
         match extracted_name {
             Ok(v_name) => {
-                contest_info.url = Some(v_url.to_string());
+                contest_info.url = Some(format!("https://atcoder.jp/contests/{}", v_name));
                 let formatted_name = format_contest_name(&v_name);
                 match formatted_name {
                     ContestKind::AXC(kind, num) => {
