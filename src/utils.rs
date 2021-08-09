@@ -9,7 +9,7 @@ use std::{
 
 use crate::{
     get_request,
-    templates::{CARGO_FILE_ADD_TEMPLATE, CARGO_TOML_BIN_TEMPLATE},
+    templates::{CARGO_CONFIG_ALIAS_TEMPLATE, CARGO_FILE_ADD_TEMPLATE, CARGO_TOML_BIN_TEMPLATE},
     ErrorMessages,
 };
 
@@ -75,7 +75,7 @@ pub async fn generate_options_file(
             .trim_end()
             .replace("[dependencies]", "")
             .add(
-                names
+                (&names)
                     .into_iter()
                     .map(|x| {
                         CARGO_TOML_BIN_TEMPLATE
@@ -88,6 +88,39 @@ pub async fn generate_options_file(
             .add("\n\n")
             .add(parsed_base)
             .add(CARGO_FILE_ADD_TEMPLATE)
+            .as_bytes(),
+    ) {
+        Ok(_) => (),
+        Err(_e) => return Err(ErrorMessages::FailedWrite),
+    };
+
+    match std::fs::create_dir(format!("{}/.cargo", dir_name)) {
+        Ok(_) => (),
+        Err(_e) => return Err(ErrorMessages::FailedCreateDir),
+    };
+    let mut config_file = match OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(format!("{}/.cargo/config.toml", dir_name))
+    {
+        Ok(f) => f,
+        Err(_e) => return Err(ErrorMessages::FailedCreateFile),
+    };
+    match config_file.write_all(
+        "[alias]\n"
+            .to_string()
+            .add(
+                names
+                    .into_iter()
+                    .map(|x| {
+                        CARGO_CONFIG_ALIAS_TEMPLATE
+                            .trim_start()
+                            .replace("{{name}}", x.as_str())
+                    })
+                    .join("\n")
+                    .as_str(),
+            )
             .as_bytes(),
     ) {
         Ok(_) => (),
