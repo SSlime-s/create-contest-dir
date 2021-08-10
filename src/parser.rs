@@ -48,7 +48,7 @@ pub fn parse_arg() -> Result<ParsedArg, String> {
     }
 }
 
-pub fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String> {
+fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String> {
     let user_name = if let Some(u) = matches.value_of("user_name") {
         u.to_string()
     } else {
@@ -65,7 +65,7 @@ pub fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String>
     Ok((user_name, password))
 }
 
-pub fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
+fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
     let mut contest_info = OptionalContestInfo {
         name: None,
         kind: None,
