@@ -31,6 +31,7 @@ impl From<OptionalContestInfo> for Result<ContestInfo, ()> {
 pub enum ParsedArg {
     CreateDir(ContestInfo),
     Login(String, String),
+    AddTest(String, Vec<String>),
 }
 pub fn parse_arg() -> Result<ParsedArg, String> {
     let app = create_app();
@@ -38,6 +39,11 @@ pub fn parse_arg() -> Result<ParsedArg, String> {
     if let Some(matches) = matches.subcommand_matches("login") {
         match parse_login_arg(matches) {
             Ok(res) => Ok(ParsedArg::Login(res.0, res.1)),
+            Err(e) => Err(e),
+        }
+    } else if let Some(matches) = matches.subcommand_matches("add_test") {
+        match parse_add_test_arg(matches) {
+            Ok(res) => Ok(ParsedArg::AddTest(res.0, res.1)),
             Err(e) => Err(e),
         }
     } else {
@@ -63,6 +69,44 @@ fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String> {
         Err(e) => return Err(e.to_string()),
     };
     Ok((user_name, password))
+}
+
+fn parse_add_test_arg(matches: &ArgMatches) -> Result<(String, Vec<String>), String> {
+    let mut url = None;
+    let mut kind: Option<Contests> = None;
+    if let Some(v_url) = matches.value_of("url") {
+        let extracted_name = extract_name_from_url(v_url);
+        match extracted_name {
+            Ok(v_name) => {
+                url = Some(format!("https://atcoder.jp/contests/{}", v_name));
+                let formatted_name = format_contest_name(&v_name);
+                match formatted_name {
+                    ContestKind::AXC(v_kind, v_num) => {
+                        kind = Some((v_kind.as_str(), v_num.as_str()).into());
+                    }
+                    ContestKind::Other(_name) => (),
+                }
+            }
+            Err(_e) => return Err("Invalid URL !".to_string()),
+        }
+    }
+
+    if let Some(v_type) = matches.value_of("type") {
+        kind = Some(match v_type.to_lowercase().as_str() {
+            "abc" => Contests::ABC,
+            "h-abc" => Contests::H_ABC,
+            "s-abc" => Contests::S_ABC,
+            "arc" => Contests::ARC,
+            "agc" => Contests::AGC,
+            _ => return Err("invalid kind !".to_string()),
+        });
+    }
+
+    if let (Some(url), Some(kind)) = (url, kind) {
+        Ok((url, kind.problem_names()))
+    } else {
+        Err("invalid args".to_string())
+    }
 }
 
 fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
@@ -171,6 +215,14 @@ fn create_app<'a>() -> App<'a, 'a> {
                         .value_name("URL")
                         .takes_value(true)
                         .required(true),
+                )
+                .arg(
+                    Arg::with_name("type")
+                        .help("contest type")
+                        .short("t")
+                        .long("type")
+                        .value_name("TYPE")
+                        .takes_value(true),
                 ),
         );
     app

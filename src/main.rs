@@ -7,13 +7,14 @@ mod utils;
 use std::fmt;
 
 use crate::{
-    handler::{create_contest_dir, login},
+    handler::{add_test, create_contest_dir, login},
     parser::{parse_arg, ParsedArg},
 };
 
 pub enum ErrorMessages {
     FailedCreateDir,
     FailedCreateFile,
+    FailedRemoveDir,
     FailedRemoveFile,
     FailedWrite,
     FailedGet,
@@ -23,6 +24,7 @@ impl ErrorMessages {
         match *self {
             ErrorMessages::FailedCreateDir => "failed to create dir",
             ErrorMessages::FailedCreateFile => "failed to create file",
+            ErrorMessages::FailedRemoveDir => "failed to remove dir",
             ErrorMessages::FailedRemoveFile => "failed to remove file",
             ErrorMessages::FailedWrite => "failed to write",
             ErrorMessages::FailedGet => "failed to get file",
@@ -106,5 +108,6 @@ async fn main() {
     match parsed_arg {
         ParsedArg::CreateDir(contest_info) => create_contest_dir(contest_info).await,
         ParsedArg::Login(user_name, password) => login(user_name, password).await,
+        ParsedArg::AddTest(url, problem_names) => add_test(url, problem_names).await,
     }
 }

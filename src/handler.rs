@@ -14,7 +14,7 @@ use crate::{
     parser::extract_name_from_url,
     templates::{CHILD_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE},
     utils::generate_options_file,
-    ContestInfo, Contests, ErrorMessages,
+    ContestInfo, ErrorMessages,
 };
 
 pub async fn create_contest_dir(contest_info: ContestInfo) {
@@ -110,6 +110,20 @@ pub async fn login(user_name: String, password: String) {
     println!("Saved Your cookie in \"{}\"", cookie_path.to_str().unwrap());
 }
 
+pub async fn add_test(url: String, problem_names: Vec<String>) {
+    if !std::path::Path::new("Cargo.toml").is_file() {
+        panic!("Missing Cargo.toml on This Dir")
+    }
+    if std::path::Path::new("tests").is_dir() {
+        fs::remove_dir_all("tests").expect(ErrorMessages::FailedRemoveDir.value());
+    }
+    fs::create_dir("tests").expect(ErrorMessages::FailedCreateDir.value());
+    match generate_tests_files("tests", url, problem_names).await {
+        Ok(_) => (),
+        Err(e) => panic!("{}", e),
+    };
+}
+
 async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
     let res = fs::create_dir(format!("{}/tests", contest_info.name));
     match res {
@@ -119,7 +133,7 @@ async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
     generate_tests_files(
         format!("{}/tests", contest_info.name),
         contest_info.url.unwrap(),
-        contest_info.kind,
+        contest_info.kind.problem_names(),
     )
     .await?;
     Ok(())
@@ -136,7 +150,7 @@ async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
 async fn generate_tests_files(
     path: impl Into<String>,
     url: impl Into<String>,
-    kind: Contests,
+    problem_names: Vec<String>,
 ) -> Result<(), String> {
     let cookie_headers = get_local_cookie_header().unwrap_or(HeaderMap::new());
     let path: String = path.into();
@@ -147,7 +161,7 @@ async fn generate_tests_files(
         Ok(s) => s,
         Err(_e) => return Err("Failed to Parse Url".to_string()),
     };
-    for idx in kind.problem_names() {
+    for idx in problem_names {
         match fs::create_dir(format!("{}/{}", &path, idx)) {
             Ok(_) => (),
             Err(_e) => return Err(ErrorMessages::FailedCreateDir.value().to_string()),
