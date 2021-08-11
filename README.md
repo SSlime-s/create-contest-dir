@@ -1,6 +1,6 @@
 # AtCoder Create Contest
 AtCoder のコンテストに Rust で参加する際のディレクトリを簡単に作成することができます
-`cargo test` でサンプルケースのテストもできます
+`cargo test-x` でサンプルケースのテストもできます
 提出の際は `src/x.rs` を提出してください
 ## install
 `cargo install --git https://github.com/SSlime-s/create-contest-dir --branch main`
@@ -41,10 +41,22 @@ args:
 誤差ジャッジやインタラクティブ・解が複数あるもの には対応していません
 ```
 usage:
-  cargo test {_a|_b|...}
+  cargo test-{a|b|...}
 
 args:
-  _x テストしたい問題に対して _x とすることでその問題のテストができます 指定しない場合はすべての問題のテストが行われます
+  test-x テストしたい問題に対して test-x とすることでその問題のテストができます
+         cargo test --test x へのエイリアスです
+```
+
+### run
+```
+usage:
+  cargo run-{a|b|...}
+  cargo {a|b|...}
+
+args:
+  x run-x 実行したいものに対して run-x または x とすることで実行ができます
+          cargo run --bin x へのエイリアスです
 ```
 
 ## example
