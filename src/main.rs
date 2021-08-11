@@ -22,12 +22,12 @@ pub enum ErrorMessages {
 impl ErrorMessages {
     fn value(&self) -> &'static str {
         match *self {
-            ErrorMessages::FailedCreateDir => "failed to create dir",
-            ErrorMessages::FailedCreateFile => "failed to create file",
-            ErrorMessages::FailedRemoveDir => "failed to remove dir",
-            ErrorMessages::FailedRemoveFile => "failed to remove file",
-            ErrorMessages::FailedWrite => "failed to write",
-            ErrorMessages::FailedGet => "failed to get file",
+            ErrorMessages::FailedCreateDir => "Failed to Create Dir",
+            ErrorMessages::FailedCreateFile => "Failed to Create File",
+            ErrorMessages::FailedRemoveDir => "Failed to Remove Dir",
+            ErrorMessages::FailedRemoveFile => "Failed to Remove File",
+            ErrorMessages::FailedWrite => "Failed to Write",
+            ErrorMessages::FailedGet => "Failed to Get File",
         }
     }
 }

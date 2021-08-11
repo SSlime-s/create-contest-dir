@@ -19,7 +19,7 @@ use crate::{
 
 pub async fn create_contest_dir(contest_info: ContestInfo) {
     if std::path::Path::new(&format!("./{}", &contest_info.name)).is_dir() {
-        panic!("dir {} is already exists !", &contest_info.name)
+        panic!("Dir {} is Already Exists !", &contest_info.name)
     }
     Command::new("cargo")
         .args(&["new", "--bin", &contest_info.name, "--vcs", "none"])
@@ -30,7 +30,7 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
 
     for x in contest_info.kind.problem_names() {
         let mut child_file = fs::File::create(format!("{}/src/{}.rs", contest_info.name, x))
-            .expect("failed to create file");
+            .expect(ErrorMessages::FailedCreateFile.value());
         child_file
             .write_all(CHILD_FILE_TEMPLATE.trim_start().as_bytes())
             .expect(ErrorMessages::FailedWrite.value());
@@ -53,7 +53,7 @@ pub async fn login(user_name: String, password: String) {
         .get(login_url)
         .send()
         .await
-        .expect("failed to get login page");
+        .expect("Failed to Get Login Page");
     let mut cookie_headers = HeaderMap::new();
     resp.cookies().for_each(|cookie| {
         cookie_headers.insert(
@@ -61,7 +61,7 @@ pub async fn login(user_name: String, password: String) {
             HeaderValue::from_str(&format!("{}={}", cookie.name(), cookie.value())).unwrap(),
         );
     });
-    let html = resp.text().await.expect("failed to get login page");
+    let html = resp.text().await.expect("Failed to Get Login Page");
     let document = scraper::Html::parse_document(&html);
 
     let selector = scraper::Selector::parse(r#"input[name="csrf_token"]"#).unwrap();
@@ -88,7 +88,7 @@ pub async fn login(user_name: String, password: String) {
         .form(&params)
         .send()
         .await
-        .expect("failed to post login");
+        .expect("Failed to Post Login");
 
     let cookies_str = resp
         .cookies()
