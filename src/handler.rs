@@ -33,7 +33,7 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
             .expect(ErrorMessages::FailedCreateFile.value());
         child_file
             .write_all(CHILD_FILE_TEMPLATE.trim_start().as_bytes())
-            .expect(ErrorMessages::FailedWrite.value());
+            .expect(ErrorMessages::FailedWrite.value())
     }
 
     generate_options_file(&contest_info.name, contest_info.kind.problem_names())

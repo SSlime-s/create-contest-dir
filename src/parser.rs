@@ -132,7 +132,7 @@ fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
             }
             Err(_e) => return Err("Invalid URL !".to_string()),
         }
-    };
+    }
 
     if let Some(v_name) = matches.value_of("name") {
         let formatted_name = format_contest_name(&v_name);

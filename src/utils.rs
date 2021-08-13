@@ -97,7 +97,7 @@ pub async fn generate_options_file(
     match std::fs::create_dir(format!("{}/.cargo", dir_name)) {
         Ok(_) => (),
         Err(_e) => return Err(ErrorMessages::FailedCreateDir),
-    };
+    }
     let mut config_file = match OpenOptions::new()
         .create(true)
         .write(true)
