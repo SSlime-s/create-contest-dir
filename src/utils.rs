@@ -39,10 +39,10 @@ where
         Ok(f) => f,
         Err(_e) => return Err(ErrorMessages::FailedCreateFile),
     };
-    return match file.write_all(base.as_bytes()) {
+    match file.write_all(base.as_bytes()) {
         Ok(_) => Ok(()),
         Err(_e) => Err(ErrorMessages::FailedWrite),
-    };
+    }
 }
 
 pub async fn generate_options_file(
