@@ -26,23 +26,15 @@ where
     F: Fn() -> R,
     R: Future<Output = Result<String, reqwest::Error>>,
 {
-    let base = match fetch_fn().await {
-        Ok(s) => s,
-        Err(_e) => return Err(ErrorMessages::FailedGet),
-    };
-    let mut file = match OpenOptions::new()
+    let base = fetch_fn().await.map_err(|_e| ErrorMessages::FailedGet)?;
+    let mut file = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
         .open(format!("{}/{}", dir_name, file_name))
-    {
-        Ok(f) => f,
-        Err(_e) => return Err(ErrorMessages::FailedCreateFile),
-    };
-    match file.write_all(base.as_bytes()) {
-        Ok(_) => Ok(()),
-        Err(_e) => Err(ErrorMessages::FailedWrite),
-    }
+        .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+    file.write_all(base.as_bytes())
+        .map_err(|_e| ErrorMessages::FailedWrite)
 }
 
 pub async fn generate_options_file(
@@ -56,76 +48,63 @@ pub async fn generate_options_file(
     let re = Regex::new(r"\[dependencies\](?s:.)*").unwrap();
     let parsed_base = &re.captures(cargo_toml_base.as_str()).unwrap()[0];
 
-    let mut cargo_toml = match OpenOptions::new()
+    let mut cargo_toml = OpenOptions::new()
         .read(true)
         .write(true)
         .open(format!("{}/Cargo.toml", dir_name))
-    {
-        Ok(f) => f,
-        Err(_e) => return Err(ErrorMessages::FailedCreateFile),
-    };
-    let content = match clear_file(&mut cargo_toml) {
-        Ok(s) => s,
-        Err(_e) => return Err(ErrorMessages::FailedWrite),
-    };
+        .map_err(|_| ErrorMessages::FailedCreateFile)?;
+    let content = clear_file(&mut cargo_toml).map_err(|_e| ErrorMessages::FailedWrite)?;
 
-    match cargo_toml.write_all(
-        content
-            .trim_start()
-            .trim_end()
-            .replace("[dependencies]", "")
-            .add(
-                (&names)
-                    .into_iter()
-                    .map(|x| {
-                        CARGO_TOML_BIN_TEMPLATE
-                            .trim()
-                            .replace("{{name}}", x.as_str())
-                    })
-                    .join("\n")
-                    .as_str(),
-            )
-            .add("\n\n")
-            .add(parsed_base)
-            .add(CARGO_FILE_ADD_TEMPLATE)
-            .as_bytes(),
-    ) {
-        Ok(_) => (),
-        Err(_e) => return Err(ErrorMessages::FailedWrite),
-    };
+    cargo_toml
+        .write_all(
+            content
+                .trim_start()
+                .trim_end()
+                .replace("[dependencies]", "")
+                .add(
+                    (&names)
+                        .into_iter()
+                        .map(|x| {
+                            CARGO_TOML_BIN_TEMPLATE
+                                .trim()
+                                .replace("{{name}}", x.as_str())
+                        })
+                        .join("\n")
+                        .as_str(),
+                )
+                .add("\n\n")
+                .add(parsed_base)
+                .add(CARGO_FILE_ADD_TEMPLATE)
+                .as_bytes(),
+        )
+        .map_err(|_e| ErrorMessages::FailedWrite)?;
 
-    match std::fs::create_dir(format!("{}/.cargo", dir_name)) {
-        Ok(_) => (),
-        Err(_e) => return Err(ErrorMessages::FailedCreateDir),
-    }
-    let mut config_file = match OpenOptions::new()
+    std::fs::create_dir(format!("{}/.cargo", dir_name))
+        .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+    let mut config_file = OpenOptions::new()
         .create(true)
         .write(true)
         .truncate(true)
         .open(format!("{}/.cargo/config.toml", dir_name))
-    {
-        Ok(f) => f,
-        Err(_e) => return Err(ErrorMessages::FailedCreateFile),
-    };
-    match config_file.write_all(
-        "[alias]\n"
-            .to_string()
-            .add(
-                names
-                    .into_iter()
-                    .map(|x| {
-                        CARGO_CONFIG_ALIAS_TEMPLATE
-                            .trim_start()
-                            .replace("{{name}}", x.as_str())
-                    })
-                    .join("\n")
-                    .as_str(),
-            )
-            .as_bytes(),
-    ) {
-        Ok(_) => (),
-        Err(_e) => return Err(ErrorMessages::FailedWrite),
-    };
+        .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+    config_file
+        .write_all(
+            "[alias]\n"
+                .to_string()
+                .add(
+                    names
+                        .into_iter()
+                        .map(|x| {
+                            CARGO_CONFIG_ALIAS_TEMPLATE
+                                .trim_start()
+                                .replace("{{name}}", x.as_str())
+                        })
+                        .join("\n")
+                        .as_str(),
+                )
+                .as_bytes(),
+        )
+        .map_err(|_e| ErrorMessages::FailedWrite)?;
 
     fetch_file(dir_name, "Cargo.lock", get_request::get_cargo_lock).await?;
     fetch_file(dir_name, "rust-toolchain", get_request::get_rust_toolchain).await?;
