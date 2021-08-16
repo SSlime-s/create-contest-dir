@@ -127,13 +127,7 @@ pub async fn generate_options_file(
         Err(_e) => return Err(ErrorMessages::FailedWrite),
     };
 
-    match fetch_file(dir_name, "Cargo.lock", get_request::get_cargo_lock).await {
-        Ok(_) => (),
-        Err(e) => return Err(e),
-    }
-    match fetch_file(dir_name, "rust-toolchain", get_request::get_rust_toolchain).await {
-        Ok(_) => (),
-        Err(e) => return Err(e),
-    }
+    fetch_file(dir_name, "Cargo.lock", get_request::get_cargo_lock).await?;
+    fetch_file(dir_name, "rust-toolchain", get_request::get_rust_toolchain).await?;
     Ok(())
 }
