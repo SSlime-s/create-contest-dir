@@ -64,10 +64,8 @@ fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String> {
         stdin().read_line(&mut name).unwrap();
         name.trim().to_string()
     };
-    let password = match rpassword::read_password_from_tty(Some("password: ")) {
-        Ok(s) => s,
-        Err(e) => return Err(e.to_string()),
-    };
+    let password =
+        rpassword::read_password_from_tty(Some("password: ")).map_err(|e| e.to_string())?;
     Ok((user_name, password))
 }
 

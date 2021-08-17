@@ -41,10 +41,9 @@ pub async fn generate_options_file(
     dir_name: &str,
     names: Vec<String>,
 ) -> Result<(), ErrorMessages> {
-    let cargo_toml_base = match get_request::get_cargo_toml().await {
-        Ok(s) => s,
-        Err(_e) => return Err(ErrorMessages::FailedGet),
-    };
+    let cargo_toml_base = get_request::get_cargo_toml()
+        .await
+        .map_err(|_e| ErrorMessages::FailedGet)?;
     let re = Regex::new(r"\[dependencies\](?s:.)*").unwrap();
     let parsed_base = &re.captures(cargo_toml_base.as_str()).unwrap()[0];
 

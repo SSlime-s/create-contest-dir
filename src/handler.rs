@@ -125,11 +125,8 @@ pub async fn add_test(url: String, problem_names: Vec<String>) {
 }
 
 async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
-    let res = fs::create_dir(format!("{}/tests", contest_info.name));
-    match res {
-        Ok(_) => (),
-        Err(_e) => return Err(ErrorMessages::FailedCreateDir.value().to_string()),
-    }
+    fs::create_dir(format!("{}/tests", contest_info.name))
+        .map_err(|_e| ErrorMessages::FailedCreateDir.value())?;
     generate_tests_files(
         format!("{}/tests", contest_info.name),
         contest_info.url.unwrap(),
@@ -157,51 +154,40 @@ async fn generate_tests_files(
     let url: String = url.into();
 
     let client = create_cli();
-    let name = match extract_name_from_url(&url) {
-        Ok(s) => s,
-        Err(_e) => return Err("Failed to Parse Url".to_string()),
-    };
+    let name = extract_name_from_url(&url).map_err(|_e| "Failed to Parse Url")?;
     for idx in problem_names {
-        match fs::create_dir(format!("{}/{}", &path, idx)) {
-            Ok(_) => (),
-            Err(_e) => return Err(ErrorMessages::FailedCreateDir.value().to_string()),
-        }
-        let res = generate_sample_test_file(
+        fs::create_dir(format!("{}/{}", &path, idx))
+            .map_err(|_e| ErrorMessages::FailedCreateDir.value())?;
+        let sample_cnt = generate_sample_test_file(
             format!("{}/tasks/{}_{}", &url, name, idx).as_str(),
             &format!("{}/{}/{}", &path, idx, idx),
             &cookie_headers,
             &client,
         )
-        .await;
-        let sample_cnt = match res {
-            Ok(u) => u,
-            Err(_e) => return Err("Failed to Create Sample Files".to_string()),
-        };
-        let mut test_file = match fs::OpenOptions::new()
+        .await
+        .map_err(|_e| "Failed to Create Sample Files")?;
+        let mut test_file = fs::OpenOptions::new()
             .create(true)
             .write(true)
             .truncate(true)
             .open(format!("{}/{}.rs", &path, idx))
-        {
-            Ok(f) => f,
-            Err(_e) => return Err(ErrorMessages::FailedCreateFile.value().to_string()),
-        };
-        let res = test_file.write_all(
-            TEST_FILE_TEMPLATE
-                .to_string()
-                .add(
-                    (0..sample_cnt)
-                        .map(|i| TEST_FILE_CHILD_TEMPLATE.replace("{{num}}", &(i + 1).to_string()))
-                        .join("\n")
-                        .as_str(),
-                )
-                .replace("{{name}}", &idx)
-                .as_bytes(),
-        );
-        match res {
-            Ok(_) => (),
-            Err(_e) => return Err(ErrorMessages::FailedWrite.value().to_string()),
-        }
+            .map_err(|_e| ErrorMessages::FailedCreateFile.value())?;
+        test_file
+            .write_all(
+                TEST_FILE_TEMPLATE
+                    .to_string()
+                    .add(
+                        (0..sample_cnt)
+                            .map(|i| {
+                                TEST_FILE_CHILD_TEMPLATE.replace("{{num}}", &(i + 1).to_string())
+                            })
+                            .join("\n")
+                            .as_str(),
+                    )
+                    .replace("{{name}}", &idx)
+                    .as_bytes(),
+            )
+            .map_err(|_e| ErrorMessages::FailedWrite.value())?;
     }
 
     Ok(())
@@ -224,31 +210,25 @@ async fn generate_sample_test_file(
     let samples = fetch_sample_data(url, cookie_headers, client).await?;
     let sample_cnt = samples.len();
     for (idx, (input, output)) in samples.into_iter().enumerate() {
-        let input_file = std::fs::OpenOptions::new()
+        // input のファイルを作って書き込む
+        std::fs::OpenOptions::new()
             .truncate(true)
             .write(true)
             .create(true)
-            .open(format!("{}_{}.input", path, idx + 1));
-        let res = match input_file {
-            Ok(mut f) => f.write_all(input.as_bytes()),
-            Err(_e) => return Err(()),
-        };
-        if let Err(_e) = res {
-            return Err(());
-        }
+            .open(format!("{}_{}.input", path, idx + 1))
+            .map_err(|_e| ())?
+            .write_all(input.as_bytes())
+            .map_err(|_e| ())?;
 
-        let output_file = std::fs::OpenOptions::new()
+        // output のファイルを作って書き込む
+        std::fs::OpenOptions::new()
             .truncate(true)
             .write(true)
             .create(true)
-            .open(format!("{}_{}.output", path, idx + 1));
-        let res = match output_file {
-            Ok(mut f) => f.write_all(output.as_bytes()),
-            Err(_e) => return Err(()),
-        };
-        if let Err(_e) = res {
-            return Err(());
-        }
+            .open(format!("{}_{}.output", path, idx + 1))
+            .map_err(|_e| ())?
+            .write_all(output.as_bytes())
+            .map_err(|_e| ())?;
     }
     Ok(sample_cnt)
 }
@@ -258,16 +238,15 @@ async fn fetch_sample_data(
     cookie_headers: &HeaderMap,
     client: &Client,
 ) -> Result<Vec<(String, String)>, ()> {
-    let resp = client.get(url).headers(cookie_headers.clone()).send().await;
-    let resp = match resp {
-        Ok(r) => r,
-        Err(_e) => return Err(()),
-    };
-    let html = resp.text().await;
-    let html = match html {
-        Ok(s) => s,
-        Err(_e) => return Err(()),
-    };
+    let html = client
+        .get(url)
+        .headers(cookie_headers.clone())
+        .send()
+        .await
+        .map_err(|_e| ())?
+        .text()
+        .await
+        .map_err(|_e| ())?;
     let doc = scraper::Html::parse_document(&html);
 
     Ok(extract_sample_data(doc))
