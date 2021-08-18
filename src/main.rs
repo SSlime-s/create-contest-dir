@@ -36,6 +36,11 @@ impl fmt::Debug for ErrorMessages {
         f.write_str(self.value())
     }
 }
+impl From<ErrorMessages> for String {
+    fn from(msg: ErrorMessages) -> String {
+        msg.value().into()
+    }
+}
 
 pub struct ContestInfo {
     name: String,

@@ -126,7 +126,7 @@ pub async fn add_test(url: String, problem_names: Vec<String>) {
 
 async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
     fs::create_dir(format!("{}/tests", contest_info.name))
-        .map_err(|_e| ErrorMessages::FailedCreateDir.value())?;
+        .map_err(|_e| ErrorMessages::FailedCreateDir)?;
     generate_tests_files(
         format!("{}/tests", contest_info.name),
         contest_info.url.unwrap(),
@@ -157,7 +157,7 @@ async fn generate_tests_files(
     let name = extract_name_from_url(&url).map_err(|_e| "Failed to Parse Url")?;
     for idx in problem_names {
         fs::create_dir(format!("{}/{}", &path, idx))
-            .map_err(|_e| ErrorMessages::FailedCreateDir.value())?;
+            .map_err(|_e| ErrorMessages::FailedCreateDir)?;
         let sample_cnt = generate_sample_test_file(
             format!("{}/tasks/{}_{}", &url, name, idx).as_str(),
             &format!("{}/{}/{}", &path, idx, idx),
@@ -171,7 +171,7 @@ async fn generate_tests_files(
             .write(true)
             .truncate(true)
             .open(format!("{}/{}.rs", &path, idx))
-            .map_err(|_e| ErrorMessages::FailedCreateFile.value())?;
+            .map_err(|_e| ErrorMessages::FailedCreateFile)?;
         test_file
             .write_all(
                 TEST_FILE_TEMPLATE
@@ -187,7 +187,7 @@ async fn generate_tests_files(
                     .replace("{{name}}", &idx)
                     .as_bytes(),
             )
-            .map_err(|_e| ErrorMessages::FailedWrite.value())?;
+            .map_err(|_e| ErrorMessages::FailedWrite)?;
     }
 
     Ok(())
