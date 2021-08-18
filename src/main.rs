@@ -20,7 +20,7 @@ pub enum ErrorMessages {
     FailedGet,
 }
 impl ErrorMessages {
-    fn value(&self) -> &'static str {
+    fn value<'a>(&self) -> &'a str {
         match *self {
             ErrorMessages::FailedCreateDir => "Failed to Create Dir",
             ErrorMessages::FailedCreateFile => "Failed to Create File",
@@ -59,7 +59,7 @@ enum Contests {
 }
 #[allow(dead_code)]
 impl Contests {
-    fn value(&self) -> &'static str {
+    fn value<'a>(&self) -> &'a str {
         match *self {
             Contests::ABC => "abc",
             Contests::H_ABC => "abc",
