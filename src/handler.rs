@@ -1,3 +1,5 @@
+mod templates;
+
 use itertools::Itertools;
 use reqwest::{
     header::{HeaderMap, HeaderValue, COOKIE},
@@ -11,8 +13,8 @@ use std::{
 };
 
 use crate::{
+    handler::templates::{CHILD_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE},
     parser::extract_name_from_url,
-    templates::{CHILD_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE},
     utils::generate_options_file,
     ContestInfo, ErrorMessages,
 };

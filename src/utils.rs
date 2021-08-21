@@ -1,4 +1,5 @@
 mod fetch_files;
+mod templates;
 
 use itertools::Itertools;
 use regex::Regex;
@@ -10,7 +11,9 @@ use std::{
 };
 
 use crate::{
-    templates::{CARGO_CONFIG_ALIAS_TEMPLATE, CARGO_FILE_ADD_TEMPLATE, CARGO_TOML_BIN_TEMPLATE},
+    utils::templates::{
+        CARGO_CONFIG_ALIAS_TEMPLATE, CARGO_FILE_ADD_TEMPLATE, CARGO_TOML_BIN_TEMPLATE,
+    },
     ErrorMessages,
 };
 

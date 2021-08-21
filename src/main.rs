@@ -1,6 +1,5 @@
 mod handler;
 mod parser;
-mod templates;
 mod utils;
 
 use std::fmt;
