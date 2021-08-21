@@ -1,3 +1,5 @@
+mod fetch_files;
+
 use itertools::Itertools;
 use regex::Regex;
 use std::{
@@ -8,7 +10,6 @@ use std::{
 };
 
 use crate::{
-    get_request,
     templates::{CARGO_CONFIG_ALIAS_TEMPLATE, CARGO_FILE_ADD_TEMPLATE, CARGO_TOML_BIN_TEMPLATE},
     ErrorMessages,
 };
@@ -41,7 +42,7 @@ pub async fn generate_options_file(
     dir_name: &str,
     names: Vec<String>,
 ) -> Result<(), ErrorMessages> {
-    let cargo_toml_base = get_request::get_cargo_toml()
+    let cargo_toml_base = fetch_files::get_cargo_toml()
         .await
         .map_err(|_e| ErrorMessages::FailedGet)?;
     let re = Regex::new(r"\[dependencies\](?s:.)*").unwrap();
@@ -105,7 +106,7 @@ pub async fn generate_options_file(
         )
         .map_err(|_e| ErrorMessages::FailedWrite)?;
 
-    fetch_file(dir_name, "Cargo.lock", get_request::get_cargo_lock).await?;
-    fetch_file(dir_name, "rust-toolchain", get_request::get_rust_toolchain).await?;
+    fetch_file(dir_name, "Cargo.lock", fetch_files::get_cargo_lock).await?;
+    fetch_file(dir_name, "rust-toolchain", fetch_files::get_rust_toolchain).await?;
     Ok(())
 }

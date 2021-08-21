@@ -1,4 +1,3 @@
-mod get_request;
 mod handler;
 mod parser;
 mod templates;
