@@ -36,21 +36,13 @@ pub enum ParsedArg {
 pub fn parse_arg() -> Result<ParsedArg, String> {
     let app = create_app();
     let matches = app.get_matches();
+
     if let Some(matches) = matches.subcommand_matches("login") {
-        match parse_login_arg(matches) {
-            Ok(res) => Ok(ParsedArg::Login(res.0, res.1)),
-            Err(e) => Err(e),
-        }
+        parse_login_arg(matches).map(|res| ParsedArg::Login(res.0, res.1))
     } else if let Some(matches) = matches.subcommand_matches("add_test") {
-        match parse_add_test_arg(matches) {
-            Ok(res) => Ok(ParsedArg::AddTest(res.0, res.1)),
-            Err(e) => Err(e),
-        }
+        parse_add_test_arg(matches).map(|res| ParsedArg::AddTest(res.0, res.1))
     } else {
-        match parse_default_arg(&matches) {
-            Ok(res) => Ok(ParsedArg::CreateDir(res)),
-            Err(e) => Err(e),
-        }
+        parse_default_arg(&matches).map(|res| ParsedArg::CreateDir(res))
     }
 }
 
