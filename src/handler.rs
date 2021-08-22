@@ -1,6 +1,7 @@
 mod templates;
 
 use itertools::Itertools;
+use once_cell::sync::Lazy;
 use reqwest::{
     header::{HeaderMap, HeaderValue, COOKIE},
     Client,
