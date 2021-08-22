@@ -258,14 +258,14 @@ async fn fetch_sample_data(
     Ok(extract_sample_data(doc))
 }
 
+static TASK_STATEMENT_SELECTOR: Lazy<scraper::Selector> = Lazy::new(|| scraper::Selector::parse(r#"div[id="task-statement"]"#).unwrap());
+static PRE_SELECTOR: Lazy<scraper::Selector> = Lazy::new(|| scraper::Selector::parse("pre").unwrap());
 fn extract_sample_data(doc: scraper::Html) -> Vec<(String, String)> {
     let expected_strings = ["入力例", "出力例"];
-    let task_statement_selector = scraper::Selector::parse(r#"div[id="task-statement"]"#).unwrap();
-    let pre_selector = scraper::Selector::parse("pre").unwrap();
 
     let mut samples = Vec::new();
-    if let Some(task_statement) = doc.select(&task_statement_selector).next() {
-        for pre in task_statement.select(&pre_selector) {
+    if let Some(task_statement) = doc.select(&TASK_STATEMENT_SELECTOR).next() {
+        for pre in task_statement.select(&PRE_SELECTOR) {
             if let Some(h3) = pre.prev_sibling() {
                 if let Some(element) = h3.value().as_element() {
                     if element.name() == "h3" && h3.has_children() {
