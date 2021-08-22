@@ -138,13 +138,15 @@ async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
     Ok(())
 }
 
-/*
+/**
  example:
+ ```
    generate_tests_files(
-       /* path: */ "abc-000/tests",
-       /*  url: */ "https://atcoder.jp/contests/abc000",
-       /* kind: */ Contests::ABC
+       /*     path: */ "abc-000/tests",
+       /* base_url: */ "https://atcoder.jp/contests/abc000",
+       /*     kind: */ Contests::ABC
    )
+ ```
 */
 async fn generate_tests_files(
     path: impl Into<String>,
@@ -197,11 +199,13 @@ async fn generate_tests_files(
 
 /**
  example:
+ ```
    generate_sample_tests_file(
        /*  url: */ "https://atcoder.jp/contests/abc000/tasks/abc000_a",
        /* path: */ "abc-000/tests/a/a",
        ...
    )
+ ```
 */
 async fn generate_sample_test_file(
     url: &str,
