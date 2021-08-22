@@ -110,20 +110,15 @@ fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
     };
 
     if let Some(v_url) = matches.value_of("url") {
-        let extracted_name = extract_name_from_url(v_url);
-        match extracted_name {
-            Ok(v_name) => {
-                contest_info.url = Some(format!("https://atcoder.jp/contests/{}", v_name));
-                let formatted_name = format_contest_name(&v_name);
-                match formatted_name {
-                    ContestKind::AXC(kind, num) => {
-                        contest_info.name = Some(format!("{}-{}", kind, num));
-                        contest_info.kind = Some((kind.as_str(), num.as_str()).into());
-                    }
-                    ContestKind::Other(name) => contest_info.name = Some(name),
-                }
+        let extracted_name = extract_name_from_url(v_url).map_err(|_e| "Invalid URL !")?;
+        contest_info.url = Some(format!("https://atcoder.jp/contests/{}", extracted_name));
+        let formatted_name = format_contest_name(&extracted_name);
+        match formatted_name {
+            ContestKind::AXC(kind, num) => {
+                contest_info.name = Some(format!("{}-{}", kind, num));
+                contest_info.kind = Some((kind.as_str(), num.as_str()).into());
             }
-            Err(_e) => return Err("Invalid URL !".to_string()),
+            ContestKind::Other(name) => contest_info.name = Some(name),
         }
     }
 
