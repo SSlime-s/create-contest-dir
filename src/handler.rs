@@ -259,8 +259,10 @@ async fn fetch_sample_data(
     Ok(extract_sample_data(doc))
 }
 
-static TASK_STATEMENT_SELECTOR: Lazy<scraper::Selector> = Lazy::new(|| scraper::Selector::parse(r#"div[id="task-statement"]"#).unwrap());
-static PRE_SELECTOR: Lazy<scraper::Selector> = Lazy::new(|| scraper::Selector::parse("pre").unwrap());
+static TASK_STATEMENT_SELECTOR: Lazy<scraper::Selector> =
+    Lazy::new(|| scraper::Selector::parse(r#"div[id="task-statement"]"#).unwrap());
+static PRE_SELECTOR: Lazy<scraper::Selector> =
+    Lazy::new(|| scraper::Selector::parse("pre").unwrap());
 fn extract_sample_data(doc: scraper::Html) -> Vec<(String, String)> {
     let expected_strings = ["入力例", "出力例"];
 
