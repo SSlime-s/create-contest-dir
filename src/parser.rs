@@ -90,7 +90,7 @@ fn parse_add_test_arg(matches: &ArgMatches) -> Result<(String, Vec<String>), Str
     if let (Some(url), Some(kind)) = (url, kind) {
         Ok((url, kind.problem_names()))
     } else {
-        Err("invalid args".to_string())
+        Err("Invalid Args".to_string())
     }
 }
 
@@ -137,10 +137,7 @@ fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
     }
 
     let r: Result<ContestInfo, ()> = contest_info.into();
-    match r {
-        Ok(c) => Ok(c),
-        Err(_) => Err("name and kind is required !".to_string()),
-    }
+    r.map_err(|_e| "Name and Kind is Required !".into())
 }
 
 fn create_app<'a>() -> App<'a, 'a> {
