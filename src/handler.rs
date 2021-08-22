@@ -150,12 +150,12 @@ async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
 */
 async fn generate_tests_files(
     path: impl Into<String>,
-    url: impl Into<String>,
+    base_url: impl Into<String>,
     problem_names: Vec<String>,
 ) -> Result<(), String> {
     let cookie_headers = get_local_cookie_header().unwrap_or(HeaderMap::new());
     let path: String = path.into();
-    let url: String = url.into();
+    let url: String = base_url.into();
 
     let client = create_cli();
     let name = extract_name_from_url(&url).map_err(|_e| "Failed to Parse Url")?;
