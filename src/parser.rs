@@ -73,19 +73,14 @@ fn parse_add_test_arg(matches: &ArgMatches) -> Result<(String, Vec<String>), Str
     let mut url = None;
     let mut kind: Option<Contests> = None;
     if let Some(v_url) = matches.value_of("url") {
-        let extracted_name = extract_name_from_url(v_url);
-        match extracted_name {
-            Ok(v_name) => {
-                url = Some(format!("https://atcoder.jp/contests/{}", v_name));
-                let formatted_name = format_contest_name(&v_name);
-                match formatted_name {
-                    ContestKind::AXC(v_kind, v_num) => {
-                        kind = Some((v_kind.as_str(), v_num.as_str()).into());
-                    }
-                    ContestKind::Other(_name) => (),
-                }
+        let extracted_name = extract_name_from_url(v_url).map_err(|_e| "Invalid URL !")?;
+        url = Some(format!("https://atcoder.jp/contests/{}", extracted_name));
+        let formatted_name = format_contest_name(&extracted_name);
+        match formatted_name {
+            ContestKind::AXC(v_kind, v_num) => {
+                kind = Some((v_kind.as_str(), v_num.as_str()).into());
             }
-            Err(_e) => return Err("Invalid URL !".to_string()),
+            ContestKind::Other(_name) => (),
         }
     }
 
