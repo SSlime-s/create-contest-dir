@@ -209,8 +209,7 @@ static URL_REGEX: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"^https?://atcoder.jp/contests/([^/]+).*$").unwrap());
 
 pub fn extract_name_from_url(url: &str) -> Result<String, ()> {
-    let m = URL_REGEX.captures(url);
-    match m {
+    match URL_REGEX.captures(url) {
         Some(c) => Ok(c[1].to_string()),
         None => Err(()),
     }
@@ -223,8 +222,7 @@ enum ContestKind {
     Other(String),
 }
 fn format_contest_name(name: &str) -> ContestKind {
-    let m = AXC_REGEX.captures(name);
-    match m {
+    match AXC_REGEX.captures(name) {
         Some(c) => ContestKind::AXC((&c[1]).to_lowercase().to_string(), (&c[2]).to_string()),
         None => ContestKind::Other(name.to_lowercase().replace("_", "-")),
     }
