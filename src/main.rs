@@ -103,10 +103,7 @@ impl From<(&str, &str)> for Contests {
 
 #[tokio::main]
 async fn main() {
-    let parsed_arg = match parse_arg() {
-        Ok(res) => res,
-        Err(e) => panic!("{}", e),
-    };
+    let parsed_arg = parse_arg().expect("Failed to Parse Arg");
 
     match parsed_arg {
         ParsedArg::CreateDir(contest_info) => create_contest_dir(contest_info).await,
