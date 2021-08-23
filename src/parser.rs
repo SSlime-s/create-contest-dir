@@ -132,7 +132,7 @@ fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
             "s-abc" => Contests::S_ABC,
             "arc" => Contests::ARC,
             "agc" => Contests::AGC,
-            _ => return Err("invalid kind !".to_string()),
+            _ => return Err("Invalid Type !".to_string()),
         });
     }
 
