@@ -41,11 +41,11 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
 
     generate_options_file(&contest_info.name, contest_info.kind.problem_names())
         .await
-        .expect("Error on `generate_options_file`: ");
+        .expect("Error on `generate_options_file`");
     if contest_info.url.is_some() {
         generate_tests_dir(contest_info)
             .await
-            .expect("Failed to Generate Tests Dir: ");
+            .expect("Failed to Generate Tests Dir");
     }
 }
 
