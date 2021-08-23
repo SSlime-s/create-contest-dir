@@ -159,12 +159,13 @@ async fn generate_tests_files(
     let url: String = base_url.into();
 
     let client = create_cli();
-    let name = extract_name_from_url(&url).map_err(|_e| "Failed to Parse Url")?;
-    for idx in problem_names {
+    let problem_urls =
+        fetch_sample_urls(&format!("{}/tasks", url), &cookie_headers, &client).await?;
+    for (idx, url) in problem_names.into_iter().zip(problem_urls) {
         fs::create_dir(format!("{}/{}", &path, idx))
             .map_err(|_e| ErrorMessages::FailedCreateDir)?;
         let sample_cnt = generate_sample_test_file(
-            format!("{}/tasks/{}_{}", &url, name, idx).as_str(),
+            url.as_str(),
             &format!("{}/{}/{}", &path, idx, idx),
             &cookie_headers,
             &client,
@@ -196,6 +197,62 @@ async fn generate_tests_files(
     }
 
     Ok(())
+}
+
+static TABLE_SELECTOR: Lazy<scraper::Selector> =
+    Lazy::new(|| scraper::Selector::parse("table").unwrap());
+static TH_SELECTOR: Lazy<scraper::Selector> =
+    Lazy::new(|| scraper::Selector::parse("thead th").unwrap());
+static TR_SELECTOR: Lazy<scraper::Selector> =
+    Lazy::new(|| scraper::Selector::parse("tbody tr").unwrap());
+static TD_SELECTOR: Lazy<scraper::Selector> = Lazy::new(|| scraper::Selector::parse("td").unwrap());
+static A_SELECTOR: Lazy<scraper::Selector> = Lazy::new(|| scraper::Selector::parse("a").unwrap());
+async fn fetch_sample_urls(
+    tasks_url: &str,
+    cookie_headers: &HeaderMap,
+    client: &Client,
+) -> Result<Vec<String>, String> {
+    let html = client
+        .get(tasks_url)
+        .headers(cookie_headers.clone())
+        .send()
+        .await
+        .map_err(|_e| _e.to_string())?
+        .text()
+        .await
+        .map_err(|_e| _e.to_string())?;
+    let doc = scraper::Html::parse_document(&html);
+
+    for table in doc.select(&TABLE_SELECTOR).next() {
+        let pos = match table
+            .select(&TH_SELECTOR)
+            .position(|element| match element.text().next() {
+                Some(text) => text == "問題名" || text == "Task Name",
+                None => false,
+            }) {
+            Some(p) => p,
+            None => continue,
+        };
+
+        let res = table
+            .select(&TR_SELECTOR)
+            .map(|tr_element| {
+                let td_elements = tr_element.select(&TD_SELECTOR).collect::<Vec<_>>();
+                let link: &str = td_elements[pos]
+                    .select(&A_SELECTOR)
+                    .next()
+                    .unwrap()
+                    .value()
+                    .attr("href")
+                    .unwrap()
+                    .into();
+                "https://atcoder.jp".to_string() + link
+            })
+            .collect::<Vec<String>>();
+        return Ok(res);
+    }
+
+    Err("EOF".into())
 }
 
 /**
