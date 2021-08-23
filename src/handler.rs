@@ -15,7 +15,6 @@ use std::{
 
 use crate::{
     handler::templates::{CHILD_FILE_TEMPLATE, TEST_FILE_CHILD_TEMPLATE, TEST_FILE_TEMPLATE},
-    parser::extract_name_from_url,
     utils::generate_options_file,
     ContestInfo, ErrorMessages,
 };
