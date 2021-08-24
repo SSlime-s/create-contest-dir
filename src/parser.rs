@@ -126,14 +126,11 @@ fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
     }
 
     if let Some(v_type) = matches.value_of("type") {
-        contest_info.kind = Some(match v_type.to_lowercase().as_str() {
-            "abc" => Contests::ABC,
-            "h-abc" => Contests::H_ABC,
-            "s-abc" => Contests::S_ABC,
-            "arc" => Contests::ARC,
-            "agc" => Contests::AGC,
-            _ => return Err("Invalid Type !".to_string()),
-        });
+        if let Some(c) = Contests::from_typename(v_type.to_lowercase()) {
+            contest_info.kind = Some(c)
+        } else {
+            return Err("Invalid Type !".to_string())
+        }
     }
 
     let r: Result<ContestInfo, ()> = contest_info.into();
