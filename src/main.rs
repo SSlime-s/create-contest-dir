@@ -83,13 +83,13 @@ impl Contests {
     pub fn from_typename(type_name: impl Into<String>) -> Option<Contests> {
         let name: String = type_name.into();
         match name.as_str() {
-            "abc" => Some(Contests::ABC),
-            "h-abc" => Some(Contests::H_ABC),
-            "s-abc" => Some(Contests::S_ABC),
-            "arc" => Some(Contests::ARC),
-            "agc" => Some(Contests::AGC),
-            _ => None,
-        }
+            "abc" => Contests::ABC,
+            "h-abc" => Contests::H_ABC,
+            "s-abc" => Contests::S_ABC,
+            "arc" => Contests::ARC,
+            "agc" => Contests::AGC,
+            _ => None?,
+        }.into()
     }
 }
 impl From<(&str, &str)> for Contests {
