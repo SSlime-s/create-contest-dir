@@ -139,7 +139,7 @@ async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
 }
 
 /**
- example:
+example:
  ```
    generate_tests_files(
        /*     path: */ "abc-000/tests",
