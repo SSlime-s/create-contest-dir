@@ -255,7 +255,7 @@ async fn fetch_sample_urls(
 }
 
 /**
- example:
+example:
  ```
    generate_sample_tests_file(
        /*  url: */ "https://atcoder.jp/contests/abc000/tasks/abc000_a",
