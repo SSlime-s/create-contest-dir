@@ -89,7 +89,8 @@ impl Contests {
             "arc" => Contests::ARC,
             "agc" => Contests::AGC,
             _ => None?,
-        }.into()
+        }
+        .into()
     }
 }
 impl From<(&str, &str)> for Contests {
