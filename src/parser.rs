@@ -52,6 +52,7 @@ fn parse_login_arg(matches: &ArgMatches) -> Result<(String, String), String> {
     } else {
         print!("user name: ");
         stdout().flush().unwrap();
+
         let mut name = String::new();
         stdin().read_line(&mut name).unwrap();
         name.trim().to_string()
