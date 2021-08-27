@@ -331,9 +331,7 @@ fn extract_sample_data(doc: scraper::Html) -> Vec<(String, String)> {
                         let child = h3.children().next().unwrap().value();
                         if let Some(t) = child.as_text() {
                             if expected_strings.iter().any(|&x| t.contains(x)) {
-                                {
-                                    samples.push(pre.text().collect::<String>());
-                                }
+                                samples.push(pre.text().collect::<String>());
                             }
                         }
                     }
