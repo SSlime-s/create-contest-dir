@@ -341,8 +341,9 @@ fn extract_sample_data(doc: scraper::Html) -> Vec<(String, String)> {
             }
         }
     }
-    (0..samples.len() / 2)
-        .map(|i| (samples[i * 2].clone(), samples[i * 2 + 1].clone()))
+    samples
+        .chunks_exact(2)
+        .map(|v| (v.get(0).unwrap().clone(), v.get(1).unwrap().clone()))
         .collect::<Vec<(String, String)>>()
 }
 
@@ -359,7 +360,8 @@ fn get_local_cookie_header() -> Option<HeaderMap> {
             .unwrap()
             .join(".atcoder-create-contest-dir")
             .join("cookie"),
-    ).ok()?;
+    )
+    .ok()?;
 
     let reader = std::io::BufReader::new(file);
     let mut cookie_headers = HeaderMap::new();
