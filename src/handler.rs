@@ -359,11 +359,8 @@ fn get_local_cookie_header() -> Option<HeaderMap> {
             .unwrap()
             .join(".atcoder-create-contest-dir")
             .join("cookie"),
-    );
-    let file = match file {
-        Ok(f) => f,
-        Err(_e) => return None,
-    };
+    ).ok()?;
+
     let reader = std::io::BufReader::new(file);
     let mut cookie_headers = HeaderMap::new();
     reader.lines().for_each(|line| {
