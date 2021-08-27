@@ -369,7 +369,7 @@ fn get_local_cookie_header() -> Option<HeaderMap> {
     reader.lines().for_each(|line| {
         cookie_headers.insert(
             COOKIE,
-            HeaderValue::from_str(&format!("{}", line.unwrap())).unwrap(),
+            HeaderValue::from_str(line.unwrap().as_str()).unwrap(),
         );
     });
     Some(cookie_headers)
