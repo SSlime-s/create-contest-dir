@@ -243,8 +243,7 @@ async fn fetch_sample_urls(
                     .unwrap()
                     .value()
                     .attr("href")
-                    .unwrap()
-                    .into();
+                    .unwrap();
                 "https://atcoder.jp".to_string() + link
             })
             .collect::<Vec<String>>();
