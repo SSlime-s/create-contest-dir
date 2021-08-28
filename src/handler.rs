@@ -80,7 +80,10 @@ pub async fn login(user_name: String, password: String) {
         ("username", user_name),
         ("password", password),
         ("csrf_token", csrf_token),
-    ].iter().cloned().collect();
+    ]
+    .iter()
+    .cloned()
+    .collect();
 
     let resp = client
         .post(login_url)
@@ -118,10 +121,9 @@ pub async fn add_test(url: String, problem_names: Vec<String>) {
         fs::remove_dir_all("tests").expect(ErrorMessages::FailedRemoveDir.value());
     }
     fs::create_dir("tests").expect(ErrorMessages::FailedCreateDir.value());
-    match generate_tests_files("tests", url, problem_names).await {
-        Ok(_) => (),
-        Err(e) => panic!("{}", e),
-    };
+    generate_tests_files("tests", url, problem_names)
+        .await
+        .expect("Failed on `generate_tests_files`");
 }
 
 async fn generate_tests_dir(contest_info: ContestInfo) -> Result<(), String> {
