@@ -76,13 +76,11 @@ pub async fn login(user_name: String, password: String) {
         .unwrap()
         .to_string();
 
-    let params = {
-        let mut params = std::collections::HashMap::new();
-        params.insert("username", user_name);
-        params.insert("password", password);
-        params.insert("csrf_token", csrf_token);
-        params
-    };
+    let params: std::collections::HashMap<&str, String> = [
+        ("username", user_name),
+        ("password", password),
+        ("csrf_token", csrf_token),
+    ].iter().cloned().collect();
 
     let resp = client
         .post(login_url)
