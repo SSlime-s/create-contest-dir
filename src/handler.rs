@@ -239,7 +239,7 @@ async fn fetch_sample_urls(
                 let td_elements = tr_element
                     .select(&TD_SELECTOR)
                     .collect::<Vec<scraper::ElementRef>>();
-                let link: &str = td_elements[pos]
+                let link = td_elements[pos]
                     .select(&A_SELECTOR)
                     .next()
                     .unwrap()
