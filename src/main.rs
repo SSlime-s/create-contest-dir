@@ -73,10 +73,8 @@ impl Contests {
         let a_to_h = ('a'..='h').map(|x| x.to_string()).collect::<Vec<String>>();
         match *self {
             Contests::ABC => a_to_h,
-            Contests::H_ABC => a_to_f,
+            Contests::H_ABC | Contests::ARC | Contests::AGC => a_to_f,
             Contests::S_ABC => a_to_d,
-            Contests::ARC => a_to_f,
-            Contests::AGC => a_to_f,
         }
     }
 
