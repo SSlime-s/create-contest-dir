@@ -20,6 +20,7 @@ use crate::{
 };
 
 pub async fn create_contest_dir(contest_info: ContestInfo) {
+    let name = contest_info.name.clone();
     if std::path::Path::new(&format!("./{}", &contest_info.name)).is_dir() {
         panic!("Dir {} is Already Exists !", &contest_info.name)
     }
@@ -46,6 +47,7 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
             .await
             .expect("Failed to Generate Tests Dir");
     }
+    println!("Success to Create Contest Dir on `./{}`", name);
 }
 
 pub async fn login(user_name: String, password: String) {
