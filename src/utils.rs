@@ -139,12 +139,12 @@ impl Iterator for ProblemNames {
                     continue;
                 }
                 match x {
-                    now@'a'..='y' => {
+                    now @ 'a'..='y' => {
                         nxt.push((now as u8 + 1) as char);
                         done_update = true;
-                    },
+                    }
                     'z' => nxt.push('a'),
-                    _ => panic!("self.now has non-alphabetic characters !")
+                    _ => panic!("self.now has non-alphabetic characters !"),
                 }
             } else if !done_update {
                 nxt.push('a');
