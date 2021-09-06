@@ -96,15 +96,9 @@ impl From<(&str, &str)> for Contests {
         assert!(kind == "abc" || kind == "arc" || kind == "agc");
         let num: u32 = num.parse().unwrap();
         match kind {
-            "abc" => {
-                if num <= 125 {
-                    Contests::S_ABC
-                } else if num <= 211 {
-                    Contests::H_ABC
-                } else {
-                    Contests::ABC
-                }
-            }
+            "abc" if num <= 125 => Contests::S_ABC,
+            "abc" if num <= 211 => Contests::H_ABC,
+            "abc" => Contests::ABC,
             "arc" => Contests::ARC,
             "agc" => Contests::AGC,
             _ => Contests::AGC,
