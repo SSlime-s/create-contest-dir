@@ -134,7 +134,7 @@ impl Iterator for ProblemNames {
         let mut done_update = false;
         loop {
             if let Some(x) = chars.next() {
-                if !done_update {
+                if done_update {
                     nxt.push(x);
                     continue;
                 }
