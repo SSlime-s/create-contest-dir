@@ -113,3 +113,48 @@ pub async fn generate_options_file(
     fetch_file(dir_name, "rust-toolchain", fetch_files::get_rust_toolchain).await?;
     Ok(())
 }
+
+pub struct ProblemNames {
+    idx: usize,
+    now: String,
+}
+impl ProblemNames {
+    pub fn new() -> Self {
+        ProblemNames {
+            idx: 0,
+            now: String::new(),
+        }
+    }
+}
+impl Iterator for ProblemNames {
+    type Item = String;
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut chars = self.now.chars().rev();
+        let mut nxt = Vec::<char>::new();
+        let mut done_update = false;
+        loop {
+            if let Some(x) = chars.next() {
+                if !done_update {
+                    nxt.push(x);
+                    continue;
+                }
+                match x {
+                    now@'a'..='y' => {
+                        nxt.push((now as u8 + 1) as char);
+                        done_update = true;
+                    },
+                    'z' => nxt.push('a'),
+                    _ => panic!("self.now has non-alphabetic characters !")
+                }
+            } else if !done_update {
+                nxt.push('a');
+                done_update = true;
+            } else {
+                break;
+            }
+        }
+        self.now = nxt.iter().rev().collect::<String>();
+        self.idx += 1;
+        Some(self.now.clone())
+    }
+}

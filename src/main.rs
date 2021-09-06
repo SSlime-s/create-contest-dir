@@ -68,13 +68,13 @@ impl Contests {
     }
 
     fn problem_names(&self) -> Vec<String> {
-        let a_to_d = ('a'..='d').map(|x| x.to_string()).collect::<Vec<String>>();
-        let a_to_f = ('a'..='f').map(|x| x.to_string()).collect::<Vec<String>>();
-        let a_to_h = ('a'..='h').map(|x| x.to_string()).collect::<Vec<String>>();
+        fn create_a_to_x(n: usize) -> Vec<String> {
+            crate::utils::ProblemNames::new().take(n).collect()
+        }
         match *self {
-            Contests::ABC => a_to_h,
-            Contests::H_ABC | Contests::ARC | Contests::AGC => a_to_f,
-            Contests::S_ABC => a_to_d,
+            Contests::ABC => create_a_to_x(8),
+            Contests::H_ABC | Contests::ARC | Contests::AGC => create_a_to_x(6),
+            Contests::S_ABC => create_a_to_x(4),
         }
     }
 
