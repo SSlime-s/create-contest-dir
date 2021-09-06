@@ -78,9 +78,11 @@ impl Contests {
         }
     }
 
-    pub fn from_typename(type_name: impl Into<String>) -> Option<Contests> {
-        let name: String = type_name.into();
-        match name.as_str() {
+    pub fn from_typename<T>(type_name: T) -> Option<Contests>
+    where
+        String: From<T>,
+    {
+        match String::from(type_name).as_str() {
             "abc" => Contests::ABC,
             "h-abc" => Contests::H_ABC,
             "s-abc" => Contests::S_ABC,
