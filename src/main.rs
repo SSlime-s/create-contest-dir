@@ -46,7 +46,6 @@ pub struct ContestInfo {
     url: Option<String>,
 }
 
-// memo: -abc125 4問 abc126-abc211 6問 abc212- 8問
 #[allow(non_camel_case_types)]
 enum Contests {
     ABC,
@@ -97,6 +96,7 @@ impl From<(&str, &str)> for Contests {
     fn from((kind, num): (&str, &str)) -> Self {
         assert!(kind == "abc" || kind == "arc" || kind == "agc");
         let num: u32 = num.parse().unwrap();
+        // -ABC125 4問 ABC126-ABC211 6問 abc212- 8問
         match kind {
             "abc" if num <= 125 => Contests::S_ABC,
             "abc" if num <= 211 => Contests::H_ABC,
