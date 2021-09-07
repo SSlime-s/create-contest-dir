@@ -2,7 +2,7 @@ mod fetch_files;
 mod templates;
 
 use itertools::Itertools;
-use regex::Regex;
+use once_cell::sync::Lazy;
 use std::{
     fs::{File, OpenOptions},
     future::Future,
@@ -41,6 +41,8 @@ where
         .map_err(|_e| ErrorMessages::FailedWrite)
 }
 
+static AFTER_DEPENDENCIES: Lazy<regex::Regex> =
+    Lazy::new(|| regex::Regex::new(r"\[dependencies\](?s:.)*").unwrap());
 pub async fn generate_options_file(
     dir_name: &str,
     names: Vec<String>,
@@ -48,8 +50,6 @@ pub async fn generate_options_file(
     let cargo_toml_base = fetch_files::get_cargo_toml()
         .await
         .map_err(|_e| ErrorMessages::FailedGet)?;
-    let re = Regex::new(r"\[dependencies\](?s:.)*").unwrap();
-    let parsed_base = &re.captures(cargo_toml_base.as_str()).unwrap()[0];
 
     let mut cargo_toml = OpenOptions::new()
         .read(true)
@@ -59,27 +59,7 @@ pub async fn generate_options_file(
     let content = clear_file(&mut cargo_toml).map_err(|_e| ErrorMessages::FailedWrite)?;
 
     cargo_toml
-        .write_all(
-            content
-                .trim_start()
-                .trim_end()
-                .replace("[dependencies]", "")
-                .add(
-                    (&names)
-                        .into_iter()
-                        .map(|x| {
-                            CARGO_TOML_BIN_TEMPLATE
-                                .trim()
-                                .replace("{{name}}", x.as_str())
-                        })
-                        .join("\n")
-                        .as_str(),
-                )
-                .add("\n\n")
-                .add(parsed_base)
-                .add(CARGO_FILE_ADD_TEMPLATE)
-                .as_bytes(),
-        )
+        .write_all(generate_cargo_toml_content(cargo_toml_base, content, &names).as_bytes())
         .map_err(|_e| ErrorMessages::FailedWrite)?;
 
     std::fs::create_dir(format!("{}/.cargo", dir_name))
@@ -91,27 +71,54 @@ pub async fn generate_options_file(
         .open(format!("{}/.cargo/config.toml", dir_name))
         .map_err(|_e| ErrorMessages::FailedCreateFile)?;
     config_file
-        .write_all(
-            "[alias]\n"
-                .to_string()
-                .add(
-                    names
-                        .into_iter()
-                        .map(|x| {
-                            CARGO_CONFIG_ALIAS_TEMPLATE
-                                .trim_start()
-                                .replace("{{name}}", x.as_str())
-                        })
-                        .join("\n")
-                        .as_str(),
-                )
-                .as_bytes(),
-        )
+        .write_all(generate_alias_content(&names).as_bytes())
         .map_err(|_e| ErrorMessages::FailedWrite)?;
 
     fetch_file(dir_name, "Cargo.lock", fetch_files::get_cargo_lock).await?;
     fetch_file(dir_name, "rust-toolchain", fetch_files::get_rust_toolchain).await?;
     Ok(())
+}
+
+fn generate_alias_content(names: &[String]) -> String {
+    "[alias]\n".to_string().add(
+        names
+            .into_iter()
+            .map(|x| {
+                CARGO_CONFIG_ALIAS_TEMPLATE
+                    .trim_start()
+                    .replace("{{name}}", x.as_str())
+            })
+            .join("\n")
+            .as_str(),
+    )
+}
+
+fn generate_cargo_toml_content(
+    cargo_toml_base: String,
+    content: String,
+    names: &[String],
+) -> String {
+    let parsed_base = &AFTER_DEPENDENCIES
+        .captures(cargo_toml_base.as_str())
+        .unwrap()[0];
+    content
+        .trim_start()
+        .trim_end()
+        .replace("[dependencies]", "")
+        .add(
+            names
+                .into_iter()
+                .map(|x| {
+                    CARGO_TOML_BIN_TEMPLATE
+                        .trim()
+                        .replace("{{name}}", x.as_str())
+                })
+                .join("\n")
+                .as_str(),
+        )
+        .add("\n\n")
+        .add(parsed_base)
+        .add(CARGO_FILE_ADD_TEMPLATE)
 }
 
 pub struct ProblemNames {
