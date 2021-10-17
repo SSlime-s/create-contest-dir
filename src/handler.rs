@@ -155,7 +155,7 @@ async fn generate_tests_files(
     base_url: impl Into<String>,
     problem_names: Vec<String>,
 ) -> Result<(), String> {
-    let cookie_headers = get_local_cookie_header().unwrap_or(HeaderMap::new());
+    let cookie_headers = get_local_cookie_header().unwrap_or_default();
     let path: String = path.into();
     let url: String = base_url.into();
 
@@ -224,7 +224,7 @@ async fn fetch_sample_urls(
         .map_err(|_e| _e.to_string())?;
     let doc = scraper::Html::parse_document(&html);
 
-    for table in doc.select(&TABLE_SELECTOR).next() {
+    for table in doc.select(&TABLE_SELECTOR) {
         let pos = match table
             .select(&TH_SELECTOR)
             .position(|element| match element.text().next() {

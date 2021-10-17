@@ -47,6 +47,7 @@ pub struct ContestInfo {
 }
 
 #[allow(non_camel_case_types)]
+#[allow(clippy::upper_case_acronyms)]
 enum Contests {
     ABC,
     H_ABC,

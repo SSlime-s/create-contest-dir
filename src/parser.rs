@@ -42,7 +42,7 @@ pub fn parse_arg() -> Result<ParsedArg, String> {
     } else if let Some(matches) = matches.subcommand_matches("add_test") {
         parse_add_test_arg(matches).map(|res| ParsedArg::AddTest(res.0, res.1))
     } else {
-        parse_default_arg(&matches).map(|res| ParsedArg::CreateDir(res))
+        parse_default_arg(&matches).map(ParsedArg::CreateDir)
     }
 }
 
@@ -116,7 +116,7 @@ fn parse_default_arg(matches: &ArgMatches) -> Result<ContestInfo, String> {
     }
 
     if let Some(v_name) = matches.value_of("name") {
-        let formatted_name = format_contest_name(&v_name);
+        let formatted_name = format_contest_name(v_name);
         match formatted_name {
             ContestKind::AXC(kind, num) => {
                 contest_info.name = Some(format!("{}-{}", kind, num));
@@ -211,13 +211,14 @@ pub fn extract_name_from_url(url: &str) -> Result<String, ()> {
 
 static AXC_REGEX: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?i)^(a[bgr]c)[-_]?([0-9]{3})$").unwrap());
+#[allow(clippy::upper_case_acronyms)]
 enum ContestKind {
     AXC(String, String),
     Other(String),
 }
 fn format_contest_name(name: &str) -> ContestKind {
     match AXC_REGEX.captures(name) {
-        Some(c) => ContestKind::AXC((&c[1]).to_lowercase().to_string(), (&c[2]).to_string()),
+        Some(c) => ContestKind::AXC((&c[1]).to_lowercase(), (&c[2]).to_string()),
         None => ContestKind::Other(name.to_lowercase().replace("_", "-")),
     }
 }

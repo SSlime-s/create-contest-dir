@@ -82,7 +82,7 @@ pub async fn generate_options_file(
 fn generate_alias_content(names: &[String]) -> String {
     "[alias]\n".to_string().add(
         names
-            .into_iter()
+            .iter()
             .map(|x| {
                 CARGO_CONFIG_ALIAS_TEMPLATE
                     .trim_start()
@@ -107,7 +107,7 @@ fn generate_cargo_toml_content(
         .replace("[dependencies]", "")
         .add(
             names
-                .into_iter()
+                .iter()
                 .map(|x| {
                     CARGO_TOML_BIN_TEMPLATE
                         .trim()
