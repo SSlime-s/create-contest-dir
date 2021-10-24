@@ -25,7 +25,7 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
         panic!("Dir {} is Already Exists !", &contest_info.name)
     }
     Command::new("cargo")
-        .args(&["new", "--bin", &contest_info.name, "--vcs", "none"])
+        .args(&["new", "--bin", &contest_info.name, "--vcs", "none", "--edition", "2018"])
         .output()
         .expect(ErrorMessages::FailedCreateDir.value());
     fs::remove_file(format!("{}/src/main.rs", &contest_info.name))
