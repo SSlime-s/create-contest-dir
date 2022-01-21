@@ -1,4 +1,4 @@
-const JA_ALL_ENABLED: &'static str =
+const JA_ALL_ENABLED: &str =
     "https://raw.githubusercontent.com/rust-lang-ja/atcoder-rust-base/ja-all-enabled";
 async fn get_ja_all_enabled_text(file_path: &str) -> Result<String, reqwest::Error> {
     reqwest::get(&format!("{}/{}", JA_ALL_ENABLED, file_path))

@@ -25,18 +25,26 @@ pub async fn create_contest_dir(contest_info: ContestInfo) {
         panic!("Dir {} is Already Exists !", &contest_info.name)
     }
     Command::new("cargo")
-        .args(&["new", "--bin", &contest_info.name, "--vcs", "none", "--edition", "2018"])
+        .args(&[
+            "new",
+            "--bin",
+            &contest_info.name,
+            "--vcs",
+            "none",
+            "--edition",
+            "2018",
+        ])
         .output()
-        .expect(ErrorMessages::FailedCreateDir.value());
+        .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedCreateDir.value().to_string()));
     fs::remove_file(format!("{}/src/main.rs", &contest_info.name))
-        .expect(ErrorMessages::FailedRemoveFile.value());
+        .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedRemoveFile.value().to_string()));
 
     for x in contest_info.kind.problem_names() {
         let mut child_file = fs::File::create(format!("{}/src/{}.rs", contest_info.name, x))
-            .expect(ErrorMessages::FailedCreateFile.value());
+            .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedCreateFile.value().to_string()));
         child_file
             .write_all(CHILD_FILE_TEMPLATE.trim_start().as_bytes())
-            .expect(ErrorMessages::FailedWrite.value())
+            .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedWrite.value().to_string()))
     }
 
     generate_options_file(&contest_info.name, contest_info.kind.problem_names())
@@ -102,16 +110,17 @@ pub async fn login(user_name: String, password: String) {
     let path = dirs::home_dir()
         .unwrap()
         .join(".atcoder-create-contest-dir");
-    std::fs::create_dir_all(path.clone()).expect(ErrorMessages::FailedCreateDir.value());
+    std::fs::create_dir_all(path.clone())
+        .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedCreateDir.value().to_string()));
     let cookie_path = path.join("cookie");
     std::fs::OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
         .open(cookie_path.clone())
-        .expect(ErrorMessages::FailedCreateFile.value())
+        .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedCreateFile.value().to_string()))
         .write_all(cookies_str.as_bytes())
-        .expect(ErrorMessages::FailedWrite.value());
+        .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedWrite.value().to_string()));
     println!("Saved Your cookie in \"{}\"", cookie_path.to_str().unwrap());
 }
 
@@ -120,9 +129,11 @@ pub async fn add_test(url: String, problem_names: Vec<String>) {
         panic!("Missing Cargo.toml on This Dir")
     }
     if std::path::Path::new("tests").is_dir() {
-        fs::remove_dir_all("tests").expect(ErrorMessages::FailedRemoveDir.value());
+        fs::remove_dir_all("tests")
+            .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedRemoveDir.value().to_string()));
     }
-    fs::create_dir("tests").expect(ErrorMessages::FailedCreateDir.value());
+    fs::create_dir("tests")
+        .unwrap_or_else(|_| panic!("{}", ErrorMessages::FailedCreateDir.value().to_string()));
     generate_tests_files("tests", url, problem_names)
         .await
         .expect("Failed on `generate_tests_files`");
