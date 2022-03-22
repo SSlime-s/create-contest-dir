@@ -17,6 +17,8 @@ use crate::{
     ErrorMessages,
 };
 
+use self::templates::VSCODE_SETTING_TEMPLATE;
+
 pub fn clear_file(file: &mut File) -> Result<String, Error> {
     let mut content = String::new();
     file.read_to_string(&mut content)?;
@@ -73,6 +75,19 @@ pub async fn generate_options_file(
             .map_err(|_e| ErrorMessages::FailedCreateFile)?;
         config_file
             .write_all(generate_alias_content(&names).as_bytes())
+            .map_err(|_e| ErrorMessages::FailedWrite)?;
+    }
+    { /* generate .vscode/settings.json */
+        std::fs::create_dir(format!("{}/.vscode", dir_name))
+            .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+        let mut vscode_settings_file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(format!("{}/.vscode/settings.json", dir_name))
+            .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+        vscode_settings_file
+            .write_all(VSCODE_SETTING_TEMPLATE.trim_start().as_bytes())
             .map_err(|_e| ErrorMessages::FailedWrite)?;
     }
 

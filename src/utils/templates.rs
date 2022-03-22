@@ -16,3 +16,11 @@ run-{{name}} = "run --bin {{name}}"
 {{name}} = "run-{{name}}"
 test-{{name}} = "test --test {{name}}"
 "###;
+
+pub const VSCODE_SETTING_TEMPLATE: &str = r###"
+{
+  "rust-analyzer.server.extraEnv": {
+    "RUSTUP_TOOLCHAIN": "stable"
+  },
+}
+"###;
