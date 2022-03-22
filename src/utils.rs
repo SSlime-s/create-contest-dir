@@ -62,17 +62,19 @@ pub async fn generate_options_file(
         .write_all(generate_cargo_toml_content(cargo_toml_base, content, &names).as_bytes())
         .map_err(|_e| ErrorMessages::FailedWrite)?;
 
-    std::fs::create_dir(format!("{}/.cargo", dir_name))
-        .map_err(|_e| ErrorMessages::FailedCreateFile)?;
-    let mut config_file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(format!("{}/.cargo/config.toml", dir_name))
-        .map_err(|_e| ErrorMessages::FailedCreateFile)?;
-    config_file
-        .write_all(generate_alias_content(&names).as_bytes())
-        .map_err(|_e| ErrorMessages::FailedWrite)?;
+    { /* generate .cargo/config.toml */
+        std::fs::create_dir(format!("{}/.cargo", dir_name))
+            .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+        let mut config_file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(format!("{}/.cargo/config.toml", dir_name))
+            .map_err(|_e| ErrorMessages::FailedCreateFile)?;
+        config_file
+            .write_all(generate_alias_content(&names).as_bytes())
+            .map_err(|_e| ErrorMessages::FailedWrite)?;
+    }
 
     fetch_file(dir_name, "Cargo.lock", fetch_files::get_cargo_lock).await?;
     fetch_file(dir_name, "rust-toolchain", fetch_files::get_rust_toolchain).await?;
