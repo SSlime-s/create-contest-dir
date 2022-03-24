@@ -7,15 +7,12 @@ macro_rules! atcoder_rust_base {
     };
 }
 
-pub async fn get_cargo_toml() -> Result<String, reqwest::Error> {
-    let cargo_toml = include_str!(atcoder_rust_base!("Cargo.toml"));
-    Ok(cargo_toml.to_string())
+pub fn get_cargo_toml() -> String {
+    include_str!(atcoder_rust_base!("Cargo.toml")).to_string()
 }
-pub async fn get_cargo_lock() -> Result<String, reqwest::Error> {
-    let cargo_lock = include_str!(atcoder_rust_base!("Cargo.lock"));
-    Ok(cargo_lock.to_string())
+pub fn get_cargo_lock() -> String {
+    include_str!(atcoder_rust_base!("Cargo.lock")).to_string()
 }
-pub async fn get_rust_toolchain() -> Result<String, reqwest::Error> {
-    let rust_toolchain = include_str!(atcoder_rust_base!("rust-toolchain"));
-    Ok(rust_toolchain.to_string())
+pub fn get_rust_toolchain() -> String {
+    include_str!(atcoder_rust_base!("rust-toolchain")).to_string()
 }

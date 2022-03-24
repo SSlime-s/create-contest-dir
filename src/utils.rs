@@ -5,7 +5,6 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use std::{
     fs::{File, OpenOptions},
-    future::Future,
     io::{Error, Read, Seek, SeekFrom, Write},
     ops::Add,
 };
@@ -27,12 +26,11 @@ pub fn clear_file(file: &mut File) -> Result<String, Error> {
     Ok(content)
 }
 
-async fn fetch_file<F, R>(dir_name: &str, file_name: &str, fetch_fn: F) -> Result<(), ErrorMessages>
+async fn fetch_file<F>(dir_name: &str, file_name: &str, fetch_fn: F) -> Result<(), ErrorMessages>
 where
-    F: Fn() -> R,
-    R: Future<Output = Result<String, reqwest::Error>>,
+    F: Fn() -> String,
 {
-    let base = fetch_fn().await.map_err(|_e| ErrorMessages::FailedGet)?;
+    let base = fetch_fn();
     let mut file = OpenOptions::new()
         .write(true)
         .create(true)
@@ -49,9 +47,7 @@ pub async fn generate_options_file(
     dir_name: &str,
     names: Vec<String>,
 ) -> Result<(), ErrorMessages> {
-    let cargo_toml_base = fetch_files::get_cargo_toml()
-        .await
-        .map_err(|_e| ErrorMessages::FailedGet)?;
+    let cargo_toml_base = fetch_files::get_cargo_toml();
 
     let mut cargo_toml = OpenOptions::new()
         .read(true)
