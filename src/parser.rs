@@ -179,6 +179,7 @@ fn create_app<'a>() -> App<'a, 'a> {
         .subcommand(
             SubCommand::with_name("add_test")
                 .about("add test on existing dir")
+                .visible_aliases(&["add-test", "test"])
                 .arg(
                     Arg::with_name("url")
                         .help("contest url")
