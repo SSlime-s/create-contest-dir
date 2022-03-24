@@ -1,0 +1,4 @@
+[submodule "atcoder-rust-base"]
+	path = atcoder-rust-base
+	url = https://github.com/rust-lang-ja/atcoder-rust-base.git
+	branch = ja-all-enabled
