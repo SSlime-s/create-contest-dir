@@ -1,3 +1,9 @@
+# Deprecated
+
+use https://github.com/qryxip/cargo-compete
+
+cargo compete 色々できて便利なのでこっちがおすすめです  
+
 # AtCoder Create Contest
 AtCoder のコンテストに Rust で参加する際のディレクトリを簡単に作成することができます
 `cargo test-x` でサンプルケースのテストもできます
